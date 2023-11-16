@@ -1,0 +1,447 @@
+{
+  "manifestVersion": "3.2",
+  "admin": {
+    "address": "0x8f677D152D462fFB534419AACB2f2eC5B2633D08",
+    "txHash": "0xef4fa970cec84a29cad094f60b30acaf5b29a8ed48e0c3e7e78b0d66c5536e54"
+  },
+  "proxies": [
+    {
+      "address": "0xc6712F4B2EeDe48D5BA8f09Db56C820F4A236828",
+      "txHash": "0xf3e70ea37f51b0ae01d7b09b5ca7cf9375ad2c2ecaa2078b10180924c64d78ea",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x1395Dd9C0E35af75e7e1BC7846f14c53558A8F6F",
+      "txHash": "0xdb53a4554c916bba3993d9cfb428edb8eb9ad6a9575da83715b618e3552c2d67",
+      "kind": "transparent"
+    }
+  ],
+  "impls": {
+    "fa39eb694536caab09f378943f0e76ac452652af25f1e2a98543fc70174c2d33": {
+      "address": "0x67ce286a2E76d86D77A3398F9dCF01De1A60cca1",
+      "txHash": "0x400a8d90a4ed7243b2948a76735eacab5bf046fc74643488c5abb9136c2f3665",
+      "layout": {
+        "solcVersion": "0.8.20",
+        "storage": [
+          {
+            "label": "teamAddress",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_address",
+            "contract": "MediaBoard",
+            "src": "contracts/MediaBoard.sol:25"
+          },
+          {
+            "label": "albumToData",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_mapping(t_address,t_struct(AlbumData)3396_storage)",
+            "contract": "MediaBoard",
+            "src": "contracts/MediaBoard.sol:26"
+          },
+          {
+            "label": "dailyRewardIndex",
+            "offset": 0,
+            "slot": "2",
+            "type": "t_uint256",
+            "contract": "MediaBoard",
+            "src": "contracts/MediaBoard.sol:29"
+          },
+          {
+            "label": "dailyRewardBalance",
+            "offset": 0,
+            "slot": "3",
+            "type": "t_uint256",
+            "contract": "MediaBoard",
+            "src": "contracts/MediaBoard.sol:30"
+          },
+          {
+            "label": "userDailyEarned",
+            "offset": 0,
+            "slot": "4",
+            "type": "t_mapping(t_address,t_uint256)",
+            "contract": "MediaBoard",
+            "src": "contracts/MediaBoard.sol:31"
+          },
+          {
+            "label": "userDailyRewardIndex",
+            "offset": 0,
+            "slot": "5",
+            "type": "t_mapping(t_address,t_uint256)",
+            "contract": "MediaBoard",
+            "src": "contracts/MediaBoard.sol:32"
+          },
+          {
+            "label": "userDailyBalance",
+            "offset": 0,
+            "slot": "6",
+            "type": "t_mapping(t_address,t_uint256)",
+            "contract": "MediaBoard",
+            "src": "contracts/MediaBoard.sol:33"
+          },
+          {
+            "label": "albumRewardsIndex",
+            "offset": 0,
+            "slot": "7",
+            "type": "t_mapping(t_address,t_uint256)",
+            "contract": "MediaBoard",
+            "src": "contracts/MediaBoard.sol:36"
+          },
+          {
+            "label": "albumRewardsBalance",
+            "offset": 0,
+            "slot": "8",
+            "type": "t_mapping(t_address,t_uint256)",
+            "contract": "MediaBoard",
+            "src": "contracts/MediaBoard.sol:37"
+          },
+          {
+            "label": "userAlbumRewardsEarned",
+            "offset": 0,
+            "slot": "9",
+            "type": "t_mapping(t_address,t_mapping(t_address,t_uint256))",
+            "contract": "MediaBoard",
+            "src": "contracts/MediaBoard.sol:38"
+          },
+          {
+            "label": "userAlbumRewardIndex",
+            "offset": 0,
+            "slot": "10",
+            "type": "t_mapping(t_address,t_mapping(t_address,t_uint256))",
+            "contract": "MediaBoard",
+            "src": "contracts/MediaBoard.sol:39"
+          },
+          {
+            "label": "userAlbumVotes",
+            "offset": 0,
+            "slot": "11",
+            "type": "t_mapping(t_address,t_mapping(t_address,t_uint256))",
+            "contract": "MediaBoard",
+            "src": "contracts/MediaBoard.sol:40"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_bool": {
+            "label": "bool",
+            "numberOfBytes": "1"
+          },
+          "t_struct(InitializableStorage)45_storage": {
+            "label": "struct Initializable.InitializableStorage",
+            "members": [
+              {
+                "label": "_initialized",
+                "type": "t_uint64",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "_initializing",
+                "type": "t_bool",
+                "offset": 8,
+                "slot": "0"
+              }
+            ],
+            "numberOfBytes": "32"
+          },
+          "t_struct(OwnableStorage)14_storage": {
+            "label": "struct OwnableUpgradeable.OwnableStorage",
+            "members": [
+              {
+                "label": "_owner",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "0"
+              }
+            ],
+            "numberOfBytes": "32"
+          },
+          "t_uint64": {
+            "label": "uint64",
+            "numberOfBytes": "8"
+          },
+          "t_mapping(t_address,t_mapping(t_address,t_uint256))": {
+            "label": "mapping(address => mapping(address => uint256))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_struct(AlbumData)3396_storage)": {
+            "label": "mapping(address => struct MediaBoard.AlbumData)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_uint256)": {
+            "label": "mapping(address => uint256)",
+            "numberOfBytes": "32"
+          },
+          "t_struct(AlbumData)3396_storage": {
+            "label": "struct MediaBoard.AlbumData",
+            "members": [
+              {
+                "label": "creator",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "votes",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "1"
+              }
+            ],
+            "numberOfBytes": "64"
+          },
+          "t_uint256": {
+            "label": "uint256",
+            "numberOfBytes": "32"
+          }
+        },
+        "namespaces": {
+          "erc7201:openzeppelin.storage.Ownable": [
+            {
+              "contract": "OwnableUpgradeable",
+              "label": "_owner",
+              "type": "t_address",
+              "src": "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol:24",
+              "offset": 0,
+              "slot": "0"
+            }
+          ],
+          "erc7201:openzeppelin.storage.Initializable": [
+            {
+              "contract": "Initializable",
+              "label": "_initialized",
+              "type": "t_uint64",
+              "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:69",
+              "offset": 0,
+              "slot": "0"
+            },
+            {
+              "contract": "Initializable",
+              "label": "_initializing",
+              "type": "t_bool",
+              "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:73",
+              "offset": 8,
+              "slot": "0"
+            }
+          ]
+        }
+      }
+    },
+    "41997e950ad49ab5127ed1f49361f7c2a2492c16f86dd577c9bde53399c4ee12": {
+      "address": "0x6c5BDD99537F344838796DeDFf6cD98b4908c57c",
+      "txHash": "0xf084ac4e93d6d9798649e5c00c5bb80542db76c33540d23d0f585ac1b63a5ad2",
+      "layout": {
+        "solcVersion": "0.8.20",
+        "storage": [
+          {
+            "label": "teamAddress",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_address",
+            "contract": "MediaBoard",
+            "src": "contracts/MediaBoard.sol:25"
+          },
+          {
+            "label": "albumToData",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_mapping(t_address,t_struct(AlbumData)3395_storage)",
+            "contract": "MediaBoard",
+            "src": "contracts/MediaBoard.sol:26"
+          },
+          {
+            "label": "dailyRewardIndex",
+            "offset": 0,
+            "slot": "2",
+            "type": "t_uint256",
+            "contract": "MediaBoard",
+            "src": "contracts/MediaBoard.sol:29"
+          },
+          {
+            "label": "dailyRewardBalance",
+            "offset": 0,
+            "slot": "3",
+            "type": "t_uint256",
+            "contract": "MediaBoard",
+            "src": "contracts/MediaBoard.sol:30"
+          },
+          {
+            "label": "userDailyEarned",
+            "offset": 0,
+            "slot": "4",
+            "type": "t_mapping(t_address,t_uint256)",
+            "contract": "MediaBoard",
+            "src": "contracts/MediaBoard.sol:31"
+          },
+          {
+            "label": "userDailyRewardIndex",
+            "offset": 0,
+            "slot": "5",
+            "type": "t_mapping(t_address,t_uint256)",
+            "contract": "MediaBoard",
+            "src": "contracts/MediaBoard.sol:32"
+          },
+          {
+            "label": "userDailyBalance",
+            "offset": 0,
+            "slot": "6",
+            "type": "t_mapping(t_address,t_uint256)",
+            "contract": "MediaBoard",
+            "src": "contracts/MediaBoard.sol:33"
+          },
+          {
+            "label": "albumRewardsIndex",
+            "offset": 0,
+            "slot": "7",
+            "type": "t_mapping(t_address,t_uint256)",
+            "contract": "MediaBoard",
+            "src": "contracts/MediaBoard.sol:36"
+          },
+          {
+            "label": "albumRewardsBalance",
+            "offset": 0,
+            "slot": "8",
+            "type": "t_mapping(t_address,t_uint256)",
+            "contract": "MediaBoard",
+            "src": "contracts/MediaBoard.sol:37"
+          },
+          {
+            "label": "userAlbumRewardsEarned",
+            "offset": 0,
+            "slot": "9",
+            "type": "t_mapping(t_address,t_mapping(t_address,t_uint256))",
+            "contract": "MediaBoard",
+            "src": "contracts/MediaBoard.sol:38"
+          },
+          {
+            "label": "userAlbumRewardIndex",
+            "offset": 0,
+            "slot": "10",
+            "type": "t_mapping(t_address,t_mapping(t_address,t_uint256))",
+            "contract": "MediaBoard",
+            "src": "contracts/MediaBoard.sol:39"
+          },
+          {
+            "label": "userAlbumVotes",
+            "offset": 0,
+            "slot": "11",
+            "type": "t_mapping(t_address,t_mapping(t_address,t_uint256))",
+            "contract": "MediaBoard",
+            "src": "contracts/MediaBoard.sol:40"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_bool": {
+            "label": "bool",
+            "numberOfBytes": "1"
+          },
+          "t_struct(InitializableStorage)45_storage": {
+            "label": "struct Initializable.InitializableStorage",
+            "members": [
+              {
+                "label": "_initialized",
+                "type": "t_uint64",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "_initializing",
+                "type": "t_bool",
+                "offset": 8,
+                "slot": "0"
+              }
+            ],
+            "numberOfBytes": "32"
+          },
+          "t_struct(OwnableStorage)14_storage": {
+            "label": "struct OwnableUpgradeable.OwnableStorage",
+            "members": [
+              {
+                "label": "_owner",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "0"
+              }
+            ],
+            "numberOfBytes": "32"
+          },
+          "t_uint64": {
+            "label": "uint64",
+            "numberOfBytes": "8"
+          },
+          "t_mapping(t_address,t_mapping(t_address,t_uint256))": {
+            "label": "mapping(address => mapping(address => uint256))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_struct(AlbumData)3395_storage)": {
+            "label": "mapping(address => struct MediaBoard.AlbumData)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_uint256)": {
+            "label": "mapping(address => uint256)",
+            "numberOfBytes": "32"
+          },
+          "t_struct(AlbumData)3395_storage": {
+            "label": "struct MediaBoard.AlbumData",
+            "members": [
+              {
+                "label": "creator",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "votes",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "1"
+              }
+            ],
+            "numberOfBytes": "64"
+          },
+          "t_uint256": {
+            "label": "uint256",
+            "numberOfBytes": "32"
+          }
+        },
+        "namespaces": {
+          "erc7201:openzeppelin.storage.Ownable": [
+            {
+              "contract": "OwnableUpgradeable",
+              "label": "_owner",
+              "type": "t_address",
+              "src": "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol:24",
+              "offset": 0,
+              "slot": "0"
+            }
+          ],
+          "erc7201:openzeppelin.storage.Initializable": [
+            {
+              "contract": "Initializable",
+              "label": "_initialized",
+              "type": "t_uint64",
+              "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:69",
+              "offset": 0,
+              "slot": "0"
+            },
+            {
+              "contract": "Initializable",
+              "label": "_initializing",
+              "type": "t_bool",
+              "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:73",
+              "offset": 8,
+              "slot": "0"
+            }
+          ]
+        }
+      }
+    }
+  }
+}
