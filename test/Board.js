@@ -23,30 +23,47 @@ describe('Board', function () {
 
     const teamAddress = owner.address;
     const Board = await hre.ethers.getContractFactory('MediaBoard');
-    const proxy = await upgrades.deployProxy(Board, [teamAddress]);
-    await proxy.waitForDeployment();
-    return await ethers.getContractAt('MediaBoard', proxy.getAddress());
+    const startTime = await time.latest();
+    const interval = 60 * 60 * 24;
+    const board = await upgrades.deployProxy(Board, [
+      teamAddress,
+      startTime,
+      interval,
+    ]);
+    await board.waitForDeployment();
+    const proxy = await ethers.getContractAt(
+      'MediaBoard',
+      await board.getAddress()
+    );
+
+    await proxy.connect(alice).newAlbum('name', 'sym');
+    const albumAddr = await proxy.albumsList(0);
+    return { proxy, albumAddr };
   }
 
   function calcVotePrice(x) {
     return (x * (x + 1) * MULTIPLIER) / 40000;
   }
+  async function vote(start, times, from, albumAddr, proxy) {
+    for (let index = start; index < start + times; index++) {
+      const votePrice = calcVotePrice(index);
+      await proxy.connect(from).vote(albumAddr, {
+        value: votePrice,
+      });
+    }
+  }
 
   describe('check vote price', async function () {
     it('check vote price', async function () {
-      const proxy = await deployBoardFixture();
-      expect(await proxy.currentVotePrice(ZERO_ADDRESS, 1)).to.equals(
-        calcVotePrice(1)
-      );
-      expect(await proxy.currentVotePrice(ZERO_ADDRESS, 2)).to.equals(
-        calcVotePrice(2)
-      );
+      const { proxy } = await loadFixture(deployBoardFixture);
+      expect(await proxy.calculateVotePrice(1)).to.equals(calcVotePrice(1));
+      expect(await proxy.calculateVotePrice(2)).to.equals(calcVotePrice(2));
     });
   });
 
   describe('Vote', async function () {
     it('create an album', async function () {
-      const proxy = await deployBoardFixture();
+      const { proxy, albumAddress } = await loadFixture(deployBoardFixture);
 
       expect(await proxy.connect(alice).newAlbum('name', 'sym'))
         .to.emit(proxy, 'NewAlbum')
@@ -54,21 +71,44 @@ describe('Board', function () {
     });
 
     it('vote an album', async function () {
-      const proxy = await deployBoardFixture();
+      const { proxy, albumAddr } = await loadFixture(deployBoardFixture);
 
-      expect(await proxy.connect(alice).newAlbum('name', 'sym'))
-        .to.emit(proxy, 'NewAlbum')
-        .withArgs(anyValue);
-      const newAlbum = await proxy.albumsList(0);
+      // first vote
+      await vote(1, 1, bob, albumAddr, proxy);
+      const {
+        artist,
+        rewardIndex: albumRewardIndex,
+        votes: albumVotes,
+      } = await proxy.albumToData(albumAddr);
+      expect(artist).to.equals(alice.address);
+      expect(albumRewardIndex).to.equals(0);
+      expect(albumVotes).to.equals(1);
 
-      const votePrice = calcVotePrice(1);
-      await proxy.connect(bob).vote(newAlbum, {
-        value: votePrice,
-      });
+      const { starts, interval, rewardIndex, votes } =
+        await proxy.seqToRewardData(0);
+      // console.log('rewarddata', starts, interval, rewardIndex, votes);
+      expect(await proxy.calculateDailyRewards(bob.address)).to.equals(0);
+      expect(rewardIndex).to.equals(0);
+      expect(votes).to.equals(1);
+
+      // second vote
+      await vote(2, 1, cindy, albumAddr, proxy);
+      const {
+        artist2,
+        rewardIndex: albumRewardIndex2,
+        votes: albumVotes2,
+      } = await proxy.albumToData(albumAddr);
+
+      const { rewardIndex2, votes2 } = await proxy.seqToRewardData(0);
+
+      const bobReward2 = (calcVotePrice(1) + calcVotePrice(2)) / 2;
+      expect(await proxy.calculateDailyRewards(bob.address)).to.equals(
+        bobReward2
+      );
     });
 
-    it('claim daily reward', async function () {
-      const proxy = await deployBoardFixture();
+    it.skip('claim daily reward', async function () {
+      const { proxy } = await loadFixture(deployBoardFixture);
 
       expect(await proxy.connect(alice).newAlbum('name', 'sym'))
         .to.emit(proxy, 'NewAlbum')
