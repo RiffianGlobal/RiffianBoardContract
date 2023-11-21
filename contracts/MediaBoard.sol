@@ -13,33 +13,22 @@ import "hardhat/console.sol";
 
 contract MediaBoard is Initializable, OwnableUpgradeable{
 
-    struct AlbumData {
-        address artist;
-        // pool reward data
-        uint rewardIndex;
-        uint votes;
-        mapping(address=>uint) userEarned;
-        mapping(address=>uint) userIndex;
-        mapping(address=>uint) userVotes;
-    }
-
-    struct RewardData {
-        uint starts;
-        uint interval;
-        uint rewardIndex;
-        uint votes;
-        mapping(address=>uint) userEarned;
-        mapping(address=>uint) userIndex;
-        mapping(address=>uint) userVotes;
-    }
-
     // constants
     uint private constant MULTIPLIER = 1e18;
 
     // PARAMS
+    uint public rewardIntervalMin = 60 * 60 * 24;
+    uint public teamRewardPercents = 5; // 5%
+    uint public artistRewardPercents = 5; // 5%
+    uint public dailyRewardPercents = 50; // 50% of vote
+    uint public albumPoolRewardPercents = 40; // 40% of vote
+
     address public teamAddress;
     mapping(address=>AlbumData) public albumToData; // album => votes number
     address[] public albumsList;
+
+    // guardian
+    address public guardian;
     
     // daily rewards related
     uint public startTimeStamp; // the start timestamp of the periodic reward
@@ -59,28 +48,46 @@ contract MediaBoard is Initializable, OwnableUpgradeable{
     mapping(address=>mapping(address=>uint)) public userAlbumRewardIndex; // album => user => index
     mapping(address=>mapping(address=>uint)) public userAlbumVotes; // album => user => votes
 
-
     // EVENTS
+    event NewRewardDistribution(uint _team, uint _artist, uint _daily, uint _album);
     event NewAlbum(address owner, address album);
     event NewVote(address from, address to, uint amount);
     event ClaimAlbumRewards(address account, address album, uint reward);
     event ClaimDailyRewards(address account, uint reward);
 
     function initialize(address _team, uint _startTimeStamp, uint _interval) initializer public{
+        __Ownable_init(msg.sender);
+
         teamAddress = address(_team);
         startTimeStamp = _startTimeStamp;
         interval = _interval;
-        __Ownable_init(msg.sender);
+    }
+
+    function setRewardDistribution(uint _team, uint _artist, uint _daily, uint _album) external onlyOwner {
+        require(_team > 0 && _team < 100);
+        require(_artist > 0 && _artist < 100);
+        require(_daily > 0 && _daily < 100);
+        require(_album > 0 && _album < 100);
+
+        teamRewardPercents = _team;
+        artistRewardPercents = _artist;
+        dailyRewardPercents = _daily;
+        albumPoolRewardPercents = _album;
+
+        emit NewRewardDistribution(teamRewardPercents, artistRewardPercents, dailyRewardPercents, albumPoolRewardPercents);
     }
 
     function setInterval(uint _interval) external onlyOwner{
-        require(_interval > 60 * 60 * 24);
+        require(_interval > rewardIntervalMin);
         interval = _interval;
     }
 
     function setStartTimeStamp( uint _startTimeStamp) external onlyOwner{
         require(_startTimeStamp > 0);
         startTimeStamp = _startTimeStamp;
+    }
+
+    function pauseVote() external onlyOwner {
     }
 
     function newAlbum(string memory _name, string memory _symbol) external {
@@ -116,7 +123,6 @@ contract MediaBoard is Initializable, OwnableUpgradeable{
         emit NewVote(msg.sender, _album, amount);
     }
 
-    
     function calculateDailyRewards(address _account) public view returns (uint){
         // RewardData memory reward = seqToRewardData[currentSeqNumber];
         uint votes = seqToRewardData[currentSeqNumber].userVotes[_account];
@@ -159,10 +165,11 @@ contract MediaBoard is Initializable, OwnableUpgradeable{
     }
 
     function _distributeAmount(uint _amount, address _album) internal{
-        ( , uint amount_mul_2) = Math.tryMul(_amount, 2);
-        (, uint dailyPoolAmount) = Math.tryDiv(_amount, 2);
-        (, uint albumPoolAmount) = Math.tryDiv(amount_mul_2, 5);
-        (, uint teamAmount) = Math.tryDiv(_amount, 20);
+        ( , uint amount_one_percent) = Math.tryDiv(_amount, 100);
+        (, uint dailyRewardAmount) = Math.tryMul(amount_one_percent, teamRewardPercents);
+        (, uint albumPoolRewardAmount) = Math.tryMul(amount_one_percent, albumPoolRewardPercents);
+        (, uint teamRewardAmount) = Math.tryMul(amount_one_percent, teamRewardPercents);
+        (, uint artistRewardAmount) = Math.tryMul(amount_one_percent, artistRewardPercents);
 
         // 
         uint seq = (block.timestamp - startTimeStamp) / interval;
@@ -175,18 +182,22 @@ contract MediaBoard is Initializable, OwnableUpgradeable{
 
         // update daily rewards
         _updateDailyRewards(msg.sender, currentSeqNumber);
-        _updateDailyRewardsIndex(dailyPoolAmount, currentSeqNumber);
+        _updateDailyRewardsIndex(dailyRewardAmount, currentSeqNumber);
 
         // update album rewards
         _updateAlbumRewards(msg.sender, _album);
-        _updateAlbumRewardsIndex(albumPoolAmount, _album);
+        _updateAlbumRewardsIndex(albumPoolRewardAmount, _album);
 
         // distribute to others
-        console.log("send to artist", albumToData[_album].artist);
         console.log("send amount", _amount);
-        (bool sent,) = albumToData[_album].artist.call{value: teamAmount}("");
+        console.log("send to artist", albumToData[_album].artist, artistRewardAmount);
+        console.log("send to team", teamRewardAmount);
+        console.log("send to daily pool", dailyRewardAmount);
+        console.log("send to album pool", albumPoolRewardAmount);
+
+        (bool sent,) = albumToData[_album].artist.call{value: artistRewardAmount}("");
         require(sent, "Failed to send token to artist");
-        (sent, ) = teamAddress.call{value: teamAmount}("");
+        (sent, ) = teamAddress.call{value: teamRewardAmount}("");
         require(sent, "Failed to send token to team");
     }
 

@@ -9,3 +9,23 @@ interface IMediaBoard {
     function claimDailyRewards() external returns (uint);
     function claimAlbumRewards(address _album) external returns (uint);
 }
+
+struct AlbumData {
+    address artist;
+    // pool reward data
+    uint rewardIndex;
+    uint votes;
+    mapping(address=>uint) userEarned;
+    mapping(address=>uint) userIndex;
+    mapping(address=>uint) userVotes;
+}
+
+struct RewardData {
+    uint starts;
+    uint interval;
+    uint rewardIndex;
+    uint votes;
+    mapping(address=>uint) userEarned;
+    mapping(address=>uint) userIndex;
+    mapping(address=>uint) userVotes;
+}
