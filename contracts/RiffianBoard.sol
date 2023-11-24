@@ -5,23 +5,22 @@ pragma solidity ^0.8.19;
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/utils/math/Math.sol";
-import "./interface/IMediaBoard.sol";
-import "./MediaBoard.sol";
+import "@openzeppelin/contracts/utils/math/SafeMath.sol";
+import "./interface/IRiffianBoard.sol";
 import "./AlbumNFT.sol";
-import "hardhat/console.sol";
+// import "hardhat/console.sol";
 
-contract MediaBoard is Initializable, OwnableUpgradeable{
+contract RiffianBoard is Initializable, OwnableUpgradeable{
 
     // constants
     uint private constant MULTIPLIER = 1e18;
 
     // PARAMS
-    uint public rewardIntervalMin = 60 * 60 * 24;
-    uint public teamRewardPercents = 5; // 5%
-    uint public artistRewardPercents = 5; // 5%
-    uint public dailyRewardPercents = 50; // 50% of vote
-    uint public albumPoolRewardPercents = 40; // 40% of vote
+    uint public rewardIntervalMin;
+    uint public teamRewardPercents; // to team address every vote
+    uint public artistRewardPercents; // to artist for every vote
+    uint public dailyRewardPercents; // 50% of vote
+    uint public albumPoolRewardPercents; // 40% of vote
 
     address public teamAddress;
     mapping(address=>AlbumData) public albumToData; // album => votes number
@@ -34,12 +33,7 @@ contract MediaBoard is Initializable, OwnableUpgradeable{
     uint public startTimeStamp; // the start timestamp of the periodic reward
     uint public interval; // the seconds of a reward period
     uint public currentSeqNumber; // the seq number of reward
-    // uint public dailyRewardIndex;
-    // uint public dailyRewardVotes; // number of votes
     mapping(uint=>RewardData) public seqToRewardData; // seq => reward data
-    // mapping(address=>uint) public userDailyEarned;
-    // mapping(address=>uint) public userDailyRewardIndex;
-    // mapping(address=>uint) public userDailyBalance;
 
     // album rewards related
     mapping(address=>uint) public albumRewardsIndex; // pool address => pool reward index
@@ -51,16 +45,22 @@ contract MediaBoard is Initializable, OwnableUpgradeable{
     // EVENTS
     event NewRewardDistribution(uint _team, uint _artist, uint _daily, uint _album);
     event NewAlbum(address owner, address album);
-    event NewVote(address from, address to, uint amount);
+    event NewVote(address from, address to, uint amount,  uint dailyRewardAmount, uint albumPoolRewardAmount, uint teamRewardAmount, uint artistRewardAmount, uint seq);
     event ClaimAlbumRewards(address account, address album, uint reward);
     event ClaimDailyRewards(address account, uint reward);
 
     function initialize(address _team, uint _startTimeStamp, uint _interval) initializer public{
-        __Ownable_init(msg.sender);
+        __Ownable_init();
 
         teamAddress = address(_team);
         startTimeStamp = _startTimeStamp;
         interval = _interval;
+
+        rewardIntervalMin = 60 * 60 * 24;
+        teamRewardPercents = 5; // 5%
+        artistRewardPercents = 5; // 5%
+        dailyRewardPercents = 50; // 50% of vote
+        albumPoolRewardPercents = 40; // 40% of vote
     }
 
     function setRewardDistribution(uint _team, uint _artist, uint _daily, uint _album) external onlyOwner {
@@ -75,6 +75,11 @@ contract MediaBoard is Initializable, OwnableUpgradeable{
         albumPoolRewardPercents = _album;
 
         emit NewRewardDistribution(teamRewardPercents, artistRewardPercents, dailyRewardPercents, albumPoolRewardPercents);
+    }
+    
+    function setTeamAddress(address _team) external onlyOwner{
+        require(_team != address(0), "invalid team address");
+        teamAddress = _team;
     }
 
     function setInterval(uint _interval) external onlyOwner{
@@ -98,7 +103,7 @@ contract MediaBoard is Initializable, OwnableUpgradeable{
 
         AlbumData storage data = albumToData[address(album)];
         data.artist = msg.sender;
-        console.log("new album address", address(album));
+        // console.log("new album address", address(album));
 
         emit NewAlbum(msg.sender, address(album));
     }
@@ -109,7 +114,7 @@ contract MediaBoard is Initializable, OwnableUpgradeable{
         uint amount = calculateVotePrice(albumToData[_album].votes);
         require(msg.value >= amount, "balance insufficient");
 
-        _distributeAmount(amount, _album);
+        (uint dailyRewardAmount, uint albumPoolRewardAmount, uint teamRewardAmount, uint artistRewardAmount) = _distributeAmount(amount, _album);
 
         // refund?
         uint refund = msg.value - amount;
@@ -120,7 +125,7 @@ contract MediaBoard is Initializable, OwnableUpgradeable{
 
         TrackNFT(_album).mint(msg.sender, albumToData[_album].votes);
 
-        emit NewVote(msg.sender, _album, amount);
+        emit NewVote(msg.sender, _album, amount, dailyRewardAmount, albumPoolRewardAmount, teamRewardAmount, artistRewardAmount, currentSeqNumber );
     }
 
     function calculateDailyRewards(address _account) public view returns (uint){
@@ -164,12 +169,12 @@ contract MediaBoard is Initializable, OwnableUpgradeable{
         albumRewardsBalance[_album] += 1;
     }
 
-    function _distributeAmount(uint _amount, address _album) internal{
-        ( , uint amount_one_percent) = Math.tryDiv(_amount, 100);
-        (, uint dailyRewardAmount) = Math.tryMul(amount_one_percent, teamRewardPercents);
-        (, uint albumPoolRewardAmount) = Math.tryMul(amount_one_percent, albumPoolRewardPercents);
-        (, uint teamRewardAmount) = Math.tryMul(amount_one_percent, teamRewardPercents);
-        (, uint artistRewardAmount) = Math.tryMul(amount_one_percent, artistRewardPercents);
+    function _distributeAmount(uint _amount, address _album) internal returns (uint, uint, uint , uint ){
+        ( , uint amount_one_percent) = SafeMath.tryDiv(_amount, 100);
+        (, uint dailyRewardAmount) = SafeMath.tryMul(amount_one_percent, teamRewardPercents);
+        (, uint albumPoolRewardAmount) = SafeMath.tryMul(amount_one_percent, albumPoolRewardPercents);
+        (, uint teamRewardAmount) = SafeMath.tryMul(amount_one_percent, teamRewardPercents);
+        (, uint artistRewardAmount) = SafeMath.tryMul(amount_one_percent, artistRewardPercents);
 
         // 
         uint seq = (block.timestamp - startTimeStamp) / interval;
@@ -189,16 +194,17 @@ contract MediaBoard is Initializable, OwnableUpgradeable{
         _updateAlbumRewardsIndex(albumPoolRewardAmount, _album);
 
         // distribute to others
-        console.log("send amount", _amount);
-        console.log("send to artist", albumToData[_album].artist, artistRewardAmount);
-        console.log("send to team", teamRewardAmount);
-        console.log("send to daily pool", dailyRewardAmount);
-        console.log("send to album pool", albumPoolRewardAmount);
+        // console.log("send amount", _amount);
+        // console.log("send to artist", albumToData[_album].artist, artistRewardAmount);
+        // console.log("send to team", teamRewardAmount);
+        // console.log("send to daily pool", dailyRewardAmount);
+        // console.log("send to album pool", albumPoolRewardAmount);
 
         (bool sent,) = albumToData[_album].artist.call{value: artistRewardAmount}("");
         require(sent, "Failed to send token to artist");
         (sent, ) = teamAddress.call{value: teamRewardAmount}("");
         require(sent, "Failed to send token to team");
+        return (dailyRewardAmount, albumPoolRewardAmount, teamRewardAmount, artistRewardAmount);
     }
 
     function calculateVotePrice(uint _counter) public pure returns (uint price){
@@ -215,7 +221,7 @@ contract MediaBoard is Initializable, OwnableUpgradeable{
         _updateDailyRewards(msg.sender, _seq);
         RewardData storage rewardData = seqToRewardData[_seq];
         uint reward = rewardData.userEarned[msg.sender];
-        console.log("claim daily reward", reward);
+        // console.log("claim daily reward", reward);
         if (reward > 0) {
             rewardData.userEarned[msg.sender] = 0;
             (bool sent, ) = msg.sender.call{value: reward}("");

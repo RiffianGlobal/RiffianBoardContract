@@ -1,7 +1,7 @@
 
 pragma solidity ^0.8.19;
 //"SPDX-License-Identifier: UNLICENSED
-interface IMediaBoard {
+interface IRiffianBoard {
     function newAlbum(string memory _name, string memory _symbol) external ;
     function vote(address _album) external payable;
     function calculateDailyRewards(address _account) external view returns (uint) ;

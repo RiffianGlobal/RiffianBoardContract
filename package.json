@@ -1,11 +1,9 @@
 {
   "name": "hardhat-project",
-  "devDependencies": {
-    "@nomicfoundation/hardhat-toolbox": "^3.0.0",
-    "@openzeppelin/contracts": "^5.0.0",
-    "@openzeppelin/contracts-upgradeable": "^5.0.0",
-    "@openzeppelin/hardhat-upgrades": "^2.2.1",
-    "dotenv": "^16.0.1",
-    "hardhat": "^2.17.3"
+  "dependencies": {
+    "@openzeppelin/contracts-upgradeable": "^4.7.3",
+    "@openzeppelin/contracts": "^4.0.0",
+    "@openzeppelin/hardhat-upgrades": "^1.19.0",
+    "dotenv": "^16.0.1"
   }
 }

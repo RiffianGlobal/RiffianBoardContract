@@ -14,6 +14,46 @@
       "address": "0x1395Dd9C0E35af75e7e1BC7846f14c53558A8F6F",
       "txHash": "0xdb53a4554c916bba3993d9cfb428edb8eb9ad6a9575da83715b618e3552c2d67",
       "kind": "transparent"
+    },
+    {
+      "address": "0x7BE1D17D4372b4aE95Cf6d626e74559a5dB84427",
+      "txHash": "0xb0bc2981a8070d8341f32cba5f805ea202d4a3288303a53406ee445f7a01c61c",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x71A15dBAc820844880a1C2d999e2cf06f6d33621",
+      "txHash": "0x0ecd1d7e4094e7f2d9000e32c0d9d1de6de1185a482f43c56bf7fa0e7d33858e",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x5aD1579549492fd023764b18ce6D28F31FeD3ca9",
+      "txHash": "0x695ec297a141e43e229f5f65d0dd4fb3fa42cce5542d2c0ade1ca6edcbcb7ccc",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x844F04150676A3908d9ad029a319dc24eeC14822",
+      "txHash": "0xfde90a803fbbeb01869ddd9e250001a2355ec9ed40a59c8f90f5a6023331ccd3",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x1319BCDFDAFcd401520e5B47e0F760aE7315A1fa",
+      "txHash": "0xe8bcfddd48e8dcf157790127047d7923d76235afa748863026d7a71314f4151e",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x82887dd111b0F3A64b9350b6b0c3aC85Dc4571E6",
+      "txHash": "0xdfc9d065cc441eaead366c1aa12794fb59886185335e875602aa873aa545dc58",
+      "kind": "transparent"
+    },
+    {
+      "address": "0xCffc7c4f8a5aa51424505dCE36ab8eeE4f890643",
+      "txHash": "0x165a59f54071d5606e0242a6e984a40b52caddbe39b10054fd18001627b9b1a7",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x081D0aa8c44D72ED9F31234271cc6b40628A5879",
+      "txHash": "0x51635e687857c861bcb66ea63b24172125eb7c2ca933e23f7ac4adcd4c0d8691",
+      "kind": "transparent"
     }
   ],
   "impls": {
@@ -441,6 +481,1019 @@
             }
           ]
         }
+      }
+    },
+    "d07f2ec73b62820fc1bfcd463a2c981336886d17c104770b663a5beeda1a38dd": {
+      "address": "0x662C6dc0818635988091932cb5F91daC4DE34A70",
+      "txHash": "0x0583ad63687d1a3a9565cf8582317a21efa8742ff019b0a1822b84053e1bea14",
+      "layout": {
+        "solcVersion": "0.8.20",
+        "storage": [
+          {
+            "label": "rewardIntervalMin",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_uint256",
+            "contract": "RiffianBoard",
+            "src": "contracts/RiffianBoard.sol:19"
+          },
+          {
+            "label": "teamRewardPercents",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_uint256",
+            "contract": "RiffianBoard",
+            "src": "contracts/RiffianBoard.sol:20"
+          },
+          {
+            "label": "artistRewardPercents",
+            "offset": 0,
+            "slot": "2",
+            "type": "t_uint256",
+            "contract": "RiffianBoard",
+            "src": "contracts/RiffianBoard.sol:21"
+          },
+          {
+            "label": "dailyRewardPercents",
+            "offset": 0,
+            "slot": "3",
+            "type": "t_uint256",
+            "contract": "RiffianBoard",
+            "src": "contracts/RiffianBoard.sol:22"
+          },
+          {
+            "label": "albumPoolRewardPercents",
+            "offset": 0,
+            "slot": "4",
+            "type": "t_uint256",
+            "contract": "RiffianBoard",
+            "src": "contracts/RiffianBoard.sol:23"
+          },
+          {
+            "label": "teamAddress",
+            "offset": 0,
+            "slot": "5",
+            "type": "t_address",
+            "contract": "RiffianBoard",
+            "src": "contracts/RiffianBoard.sol:25"
+          },
+          {
+            "label": "albumToData",
+            "offset": 0,
+            "slot": "6",
+            "type": "t_mapping(t_address,t_struct(AlbumData)4514_storage)",
+            "contract": "RiffianBoard",
+            "src": "contracts/RiffianBoard.sol:26"
+          },
+          {
+            "label": "albumsList",
+            "offset": 0,
+            "slot": "7",
+            "type": "t_array(t_address)dyn_storage",
+            "contract": "RiffianBoard",
+            "src": "contracts/RiffianBoard.sol:27"
+          },
+          {
+            "label": "guardian",
+            "offset": 0,
+            "slot": "8",
+            "type": "t_address",
+            "contract": "RiffianBoard",
+            "src": "contracts/RiffianBoard.sol:30"
+          },
+          {
+            "label": "startTimeStamp",
+            "offset": 0,
+            "slot": "9",
+            "type": "t_uint256",
+            "contract": "RiffianBoard",
+            "src": "contracts/RiffianBoard.sol:33"
+          },
+          {
+            "label": "interval",
+            "offset": 0,
+            "slot": "10",
+            "type": "t_uint256",
+            "contract": "RiffianBoard",
+            "src": "contracts/RiffianBoard.sol:34"
+          },
+          {
+            "label": "currentSeqNumber",
+            "offset": 0,
+            "slot": "11",
+            "type": "t_uint256",
+            "contract": "RiffianBoard",
+            "src": "contracts/RiffianBoard.sol:35"
+          },
+          {
+            "label": "seqToRewardData",
+            "offset": 0,
+            "slot": "12",
+            "type": "t_mapping(t_uint256,t_struct(RewardData)4535_storage)",
+            "contract": "RiffianBoard",
+            "src": "contracts/RiffianBoard.sol:36"
+          },
+          {
+            "label": "albumRewardsIndex",
+            "offset": 0,
+            "slot": "13",
+            "type": "t_mapping(t_address,t_uint256)",
+            "contract": "RiffianBoard",
+            "src": "contracts/RiffianBoard.sol:39"
+          },
+          {
+            "label": "albumRewardsBalance",
+            "offset": 0,
+            "slot": "14",
+            "type": "t_mapping(t_address,t_uint256)",
+            "contract": "RiffianBoard",
+            "src": "contracts/RiffianBoard.sol:40"
+          },
+          {
+            "label": "userAlbumRewardsEarned",
+            "offset": 0,
+            "slot": "15",
+            "type": "t_mapping(t_address,t_mapping(t_address,t_uint256))",
+            "contract": "RiffianBoard",
+            "src": "contracts/RiffianBoard.sol:41"
+          },
+          {
+            "label": "userAlbumRewardIndex",
+            "offset": 0,
+            "slot": "16",
+            "type": "t_mapping(t_address,t_mapping(t_address,t_uint256))",
+            "contract": "RiffianBoard",
+            "src": "contracts/RiffianBoard.sol:42"
+          },
+          {
+            "label": "userAlbumVotes",
+            "offset": 0,
+            "slot": "17",
+            "type": "t_mapping(t_address,t_mapping(t_address,t_uint256))",
+            "contract": "RiffianBoard",
+            "src": "contracts/RiffianBoard.sol:43"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_bool": {
+            "label": "bool",
+            "numberOfBytes": "1"
+          },
+          "t_struct(InitializableStorage)45_storage": {
+            "label": "struct Initializable.InitializableStorage",
+            "members": [
+              {
+                "label": "_initialized",
+                "type": "t_uint64",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "_initializing",
+                "type": "t_bool",
+                "offset": 8,
+                "slot": "0"
+              }
+            ],
+            "numberOfBytes": "32"
+          },
+          "t_struct(OwnableStorage)14_storage": {
+            "label": "struct OwnableUpgradeable.OwnableStorage",
+            "members": [
+              {
+                "label": "_owner",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "0"
+              }
+            ],
+            "numberOfBytes": "32"
+          },
+          "t_uint64": {
+            "label": "uint64",
+            "numberOfBytes": "8"
+          },
+          "t_array(t_address)dyn_storage": {
+            "label": "address[]",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_mapping(t_address,t_uint256))": {
+            "label": "mapping(address => mapping(address => uint256))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_struct(AlbumData)4514_storage)": {
+            "label": "mapping(address => struct AlbumData)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_uint256)": {
+            "label": "mapping(address => uint256)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_struct(RewardData)4535_storage)": {
+            "label": "mapping(uint256 => struct RewardData)",
+            "numberOfBytes": "32"
+          },
+          "t_struct(AlbumData)4514_storage": {
+            "label": "struct AlbumData",
+            "members": [
+              {
+                "label": "artist",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "rewardIndex",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "votes",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "userEarned",
+                "type": "t_mapping(t_address,t_uint256)",
+                "offset": 0,
+                "slot": "3"
+              },
+              {
+                "label": "userIndex",
+                "type": "t_mapping(t_address,t_uint256)",
+                "offset": 0,
+                "slot": "4"
+              },
+              {
+                "label": "userVotes",
+                "type": "t_mapping(t_address,t_uint256)",
+                "offset": 0,
+                "slot": "5"
+              }
+            ],
+            "numberOfBytes": "192"
+          },
+          "t_struct(RewardData)4535_storage": {
+            "label": "struct RewardData",
+            "members": [
+              {
+                "label": "starts",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "interval",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "rewardIndex",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "votes",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "3"
+              },
+              {
+                "label": "userEarned",
+                "type": "t_mapping(t_address,t_uint256)",
+                "offset": 0,
+                "slot": "4"
+              },
+              {
+                "label": "userIndex",
+                "type": "t_mapping(t_address,t_uint256)",
+                "offset": 0,
+                "slot": "5"
+              },
+              {
+                "label": "userVotes",
+                "type": "t_mapping(t_address,t_uint256)",
+                "offset": 0,
+                "slot": "6"
+              }
+            ],
+            "numberOfBytes": "224"
+          },
+          "t_uint256": {
+            "label": "uint256",
+            "numberOfBytes": "32"
+          }
+        },
+        "namespaces": {
+          "erc7201:openzeppelin.storage.Ownable": [
+            {
+              "contract": "OwnableUpgradeable",
+              "label": "_owner",
+              "type": "t_address",
+              "src": "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol:24",
+              "offset": 0,
+              "slot": "0"
+            }
+          ],
+          "erc7201:openzeppelin.storage.Initializable": [
+            {
+              "contract": "Initializable",
+              "label": "_initialized",
+              "type": "t_uint64",
+              "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:69",
+              "offset": 0,
+              "slot": "0"
+            },
+            {
+              "contract": "Initializable",
+              "label": "_initializing",
+              "type": "t_bool",
+              "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:73",
+              "offset": 8,
+              "slot": "0"
+            }
+          ]
+        }
+      }
+    },
+    "7697c64240f349ce8a13e8a59cab7629026494b099400eaa47d585878727f2c7": {
+      "address": "0x472e5f71FB3c744DB29FA245fB038e0f810ab0a0",
+      "txHash": "0xdc24911aab54944b3038c44488456917b7c99a71bd97968c2a4aeca99f6fac6f",
+      "layout": {
+        "solcVersion": "0.8.20",
+        "storage": [
+          {
+            "label": "rewardIntervalMin",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_uint256",
+            "contract": "RiffianBoard",
+            "src": "contracts/RiffianBoard.sol:19"
+          },
+          {
+            "label": "teamRewardPercents",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_uint256",
+            "contract": "RiffianBoard",
+            "src": "contracts/RiffianBoard.sol:20"
+          },
+          {
+            "label": "artistRewardPercents",
+            "offset": 0,
+            "slot": "2",
+            "type": "t_uint256",
+            "contract": "RiffianBoard",
+            "src": "contracts/RiffianBoard.sol:21"
+          },
+          {
+            "label": "dailyRewardPercents",
+            "offset": 0,
+            "slot": "3",
+            "type": "t_uint256",
+            "contract": "RiffianBoard",
+            "src": "contracts/RiffianBoard.sol:22"
+          },
+          {
+            "label": "albumPoolRewardPercents",
+            "offset": 0,
+            "slot": "4",
+            "type": "t_uint256",
+            "contract": "RiffianBoard",
+            "src": "contracts/RiffianBoard.sol:23"
+          },
+          {
+            "label": "teamAddress",
+            "offset": 0,
+            "slot": "5",
+            "type": "t_address",
+            "contract": "RiffianBoard",
+            "src": "contracts/RiffianBoard.sol:25"
+          },
+          {
+            "label": "albumToData",
+            "offset": 0,
+            "slot": "6",
+            "type": "t_mapping(t_address,t_struct(AlbumData)4457_storage)",
+            "contract": "RiffianBoard",
+            "src": "contracts/RiffianBoard.sol:26"
+          },
+          {
+            "label": "albumsList",
+            "offset": 0,
+            "slot": "7",
+            "type": "t_array(t_address)dyn_storage",
+            "contract": "RiffianBoard",
+            "src": "contracts/RiffianBoard.sol:27"
+          },
+          {
+            "label": "guardian",
+            "offset": 0,
+            "slot": "8",
+            "type": "t_address",
+            "contract": "RiffianBoard",
+            "src": "contracts/RiffianBoard.sol:30"
+          },
+          {
+            "label": "startTimeStamp",
+            "offset": 0,
+            "slot": "9",
+            "type": "t_uint256",
+            "contract": "RiffianBoard",
+            "src": "contracts/RiffianBoard.sol:33"
+          },
+          {
+            "label": "interval",
+            "offset": 0,
+            "slot": "10",
+            "type": "t_uint256",
+            "contract": "RiffianBoard",
+            "src": "contracts/RiffianBoard.sol:34"
+          },
+          {
+            "label": "currentSeqNumber",
+            "offset": 0,
+            "slot": "11",
+            "type": "t_uint256",
+            "contract": "RiffianBoard",
+            "src": "contracts/RiffianBoard.sol:35"
+          },
+          {
+            "label": "seqToRewardData",
+            "offset": 0,
+            "slot": "12",
+            "type": "t_mapping(t_uint256,t_struct(RewardData)4478_storage)",
+            "contract": "RiffianBoard",
+            "src": "contracts/RiffianBoard.sol:36"
+          },
+          {
+            "label": "albumRewardsIndex",
+            "offset": 0,
+            "slot": "13",
+            "type": "t_mapping(t_address,t_uint256)",
+            "contract": "RiffianBoard",
+            "src": "contracts/RiffianBoard.sol:39"
+          },
+          {
+            "label": "albumRewardsBalance",
+            "offset": 0,
+            "slot": "14",
+            "type": "t_mapping(t_address,t_uint256)",
+            "contract": "RiffianBoard",
+            "src": "contracts/RiffianBoard.sol:40"
+          },
+          {
+            "label": "userAlbumRewardsEarned",
+            "offset": 0,
+            "slot": "15",
+            "type": "t_mapping(t_address,t_mapping(t_address,t_uint256))",
+            "contract": "RiffianBoard",
+            "src": "contracts/RiffianBoard.sol:41"
+          },
+          {
+            "label": "userAlbumRewardIndex",
+            "offset": 0,
+            "slot": "16",
+            "type": "t_mapping(t_address,t_mapping(t_address,t_uint256))",
+            "contract": "RiffianBoard",
+            "src": "contracts/RiffianBoard.sol:42"
+          },
+          {
+            "label": "userAlbumVotes",
+            "offset": 0,
+            "slot": "17",
+            "type": "t_mapping(t_address,t_mapping(t_address,t_uint256))",
+            "contract": "RiffianBoard",
+            "src": "contracts/RiffianBoard.sol:43"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_bool": {
+            "label": "bool",
+            "numberOfBytes": "1"
+          },
+          "t_struct(InitializableStorage)45_storage": {
+            "label": "struct Initializable.InitializableStorage",
+            "members": [
+              {
+                "label": "_initialized",
+                "type": "t_uint64",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "_initializing",
+                "type": "t_bool",
+                "offset": 8,
+                "slot": "0"
+              }
+            ],
+            "numberOfBytes": "32"
+          },
+          "t_struct(OwnableStorage)14_storage": {
+            "label": "struct OwnableUpgradeable.OwnableStorage",
+            "members": [
+              {
+                "label": "_owner",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "0"
+              }
+            ],
+            "numberOfBytes": "32"
+          },
+          "t_uint64": {
+            "label": "uint64",
+            "numberOfBytes": "8"
+          },
+          "t_array(t_address)dyn_storage": {
+            "label": "address[]",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_mapping(t_address,t_uint256))": {
+            "label": "mapping(address => mapping(address => uint256))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_struct(AlbumData)4457_storage)": {
+            "label": "mapping(address => struct AlbumData)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_uint256)": {
+            "label": "mapping(address => uint256)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_struct(RewardData)4478_storage)": {
+            "label": "mapping(uint256 => struct RewardData)",
+            "numberOfBytes": "32"
+          },
+          "t_struct(AlbumData)4457_storage": {
+            "label": "struct AlbumData",
+            "members": [
+              {
+                "label": "artist",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "rewardIndex",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "votes",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "userEarned",
+                "type": "t_mapping(t_address,t_uint256)",
+                "offset": 0,
+                "slot": "3"
+              },
+              {
+                "label": "userIndex",
+                "type": "t_mapping(t_address,t_uint256)",
+                "offset": 0,
+                "slot": "4"
+              },
+              {
+                "label": "userVotes",
+                "type": "t_mapping(t_address,t_uint256)",
+                "offset": 0,
+                "slot": "5"
+              }
+            ],
+            "numberOfBytes": "192"
+          },
+          "t_struct(RewardData)4478_storage": {
+            "label": "struct RewardData",
+            "members": [
+              {
+                "label": "starts",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "interval",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "rewardIndex",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "votes",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "3"
+              },
+              {
+                "label": "userEarned",
+                "type": "t_mapping(t_address,t_uint256)",
+                "offset": 0,
+                "slot": "4"
+              },
+              {
+                "label": "userIndex",
+                "type": "t_mapping(t_address,t_uint256)",
+                "offset": 0,
+                "slot": "5"
+              },
+              {
+                "label": "userVotes",
+                "type": "t_mapping(t_address,t_uint256)",
+                "offset": 0,
+                "slot": "6"
+              }
+            ],
+            "numberOfBytes": "224"
+          },
+          "t_uint256": {
+            "label": "uint256",
+            "numberOfBytes": "32"
+          }
+        },
+        "namespaces": {
+          "erc7201:openzeppelin.storage.Ownable": [
+            {
+              "contract": "OwnableUpgradeable",
+              "label": "_owner",
+              "type": "t_address",
+              "src": "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol:24",
+              "offset": 0,
+              "slot": "0"
+            }
+          ],
+          "erc7201:openzeppelin.storage.Initializable": [
+            {
+              "contract": "Initializable",
+              "label": "_initialized",
+              "type": "t_uint64",
+              "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:69",
+              "offset": 0,
+              "slot": "0"
+            },
+            {
+              "contract": "Initializable",
+              "label": "_initializing",
+              "type": "t_bool",
+              "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:73",
+              "offset": 8,
+              "slot": "0"
+            }
+          ]
+        }
+      }
+    },
+    "19a9127feb8d4174c3836f84792a5c82c2b24751d1b26b83eb885f1ee86cb1a7": {
+      "address": "0x16c6fF059274c65e54B9618D360Db948bD940720",
+      "txHash": "0x80125c07f2c02bdf06dea5d96898b53b881ef811539a977bfe12a0a114246598",
+      "layout": {
+        "solcVersion": "0.8.20",
+        "storage": [
+          {
+            "label": "_initialized",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_uint8",
+            "contract": "Initializable",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:63",
+            "retypedFrom": "bool"
+          },
+          {
+            "label": "_initializing",
+            "offset": 1,
+            "slot": "0",
+            "type": "t_bool",
+            "contract": "Initializable",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:68"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_array(t_uint256)50_storage",
+            "contract": "ContextUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol:36"
+          },
+          {
+            "label": "_owner",
+            "offset": 0,
+            "slot": "51",
+            "type": "t_address",
+            "contract": "OwnableUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol:22"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "52",
+            "type": "t_array(t_uint256)49_storage",
+            "contract": "OwnableUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol:94"
+          },
+          {
+            "label": "rewardIntervalMin",
+            "offset": 0,
+            "slot": "101",
+            "type": "t_uint256",
+            "contract": "RiffianBoard",
+            "src": "contracts/RiffianBoard.sol:19"
+          },
+          {
+            "label": "teamRewardPercents",
+            "offset": 0,
+            "slot": "102",
+            "type": "t_uint256",
+            "contract": "RiffianBoard",
+            "src": "contracts/RiffianBoard.sol:20"
+          },
+          {
+            "label": "artistRewardPercents",
+            "offset": 0,
+            "slot": "103",
+            "type": "t_uint256",
+            "contract": "RiffianBoard",
+            "src": "contracts/RiffianBoard.sol:21"
+          },
+          {
+            "label": "dailyRewardPercents",
+            "offset": 0,
+            "slot": "104",
+            "type": "t_uint256",
+            "contract": "RiffianBoard",
+            "src": "contracts/RiffianBoard.sol:22"
+          },
+          {
+            "label": "albumPoolRewardPercents",
+            "offset": 0,
+            "slot": "105",
+            "type": "t_uint256",
+            "contract": "RiffianBoard",
+            "src": "contracts/RiffianBoard.sol:23"
+          },
+          {
+            "label": "teamAddress",
+            "offset": 0,
+            "slot": "106",
+            "type": "t_address",
+            "contract": "RiffianBoard",
+            "src": "contracts/RiffianBoard.sol:25"
+          },
+          {
+            "label": "albumToData",
+            "offset": 0,
+            "slot": "107",
+            "type": "t_mapping(t_address,t_struct(AlbumData)5482_storage)",
+            "contract": "RiffianBoard",
+            "src": "contracts/RiffianBoard.sol:26"
+          },
+          {
+            "label": "albumsList",
+            "offset": 0,
+            "slot": "108",
+            "type": "t_array(t_address)dyn_storage",
+            "contract": "RiffianBoard",
+            "src": "contracts/RiffianBoard.sol:27"
+          },
+          {
+            "label": "guardian",
+            "offset": 0,
+            "slot": "109",
+            "type": "t_address",
+            "contract": "RiffianBoard",
+            "src": "contracts/RiffianBoard.sol:30"
+          },
+          {
+            "label": "startTimeStamp",
+            "offset": 0,
+            "slot": "110",
+            "type": "t_uint256",
+            "contract": "RiffianBoard",
+            "src": "contracts/RiffianBoard.sol:33"
+          },
+          {
+            "label": "interval",
+            "offset": 0,
+            "slot": "111",
+            "type": "t_uint256",
+            "contract": "RiffianBoard",
+            "src": "contracts/RiffianBoard.sol:34"
+          },
+          {
+            "label": "currentSeqNumber",
+            "offset": 0,
+            "slot": "112",
+            "type": "t_uint256",
+            "contract": "RiffianBoard",
+            "src": "contracts/RiffianBoard.sol:35"
+          },
+          {
+            "label": "seqToRewardData",
+            "offset": 0,
+            "slot": "113",
+            "type": "t_mapping(t_uint256,t_struct(RewardData)5503_storage)",
+            "contract": "RiffianBoard",
+            "src": "contracts/RiffianBoard.sol:36"
+          },
+          {
+            "label": "albumRewardsIndex",
+            "offset": 0,
+            "slot": "114",
+            "type": "t_mapping(t_address,t_uint256)",
+            "contract": "RiffianBoard",
+            "src": "contracts/RiffianBoard.sol:39"
+          },
+          {
+            "label": "albumRewardsBalance",
+            "offset": 0,
+            "slot": "115",
+            "type": "t_mapping(t_address,t_uint256)",
+            "contract": "RiffianBoard",
+            "src": "contracts/RiffianBoard.sol:40"
+          },
+          {
+            "label": "userAlbumRewardsEarned",
+            "offset": 0,
+            "slot": "116",
+            "type": "t_mapping(t_address,t_mapping(t_address,t_uint256))",
+            "contract": "RiffianBoard",
+            "src": "contracts/RiffianBoard.sol:41"
+          },
+          {
+            "label": "userAlbumRewardIndex",
+            "offset": 0,
+            "slot": "117",
+            "type": "t_mapping(t_address,t_mapping(t_address,t_uint256))",
+            "contract": "RiffianBoard",
+            "src": "contracts/RiffianBoard.sol:42"
+          },
+          {
+            "label": "userAlbumVotes",
+            "offset": 0,
+            "slot": "118",
+            "type": "t_mapping(t_address,t_mapping(t_address,t_uint256))",
+            "contract": "RiffianBoard",
+            "src": "contracts/RiffianBoard.sol:43"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_array(t_address)dyn_storage": {
+            "label": "address[]",
+            "numberOfBytes": "32"
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]",
+            "numberOfBytes": "1568"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]",
+            "numberOfBytes": "1600"
+          },
+          "t_bool": {
+            "label": "bool",
+            "numberOfBytes": "1"
+          },
+          "t_mapping(t_address,t_mapping(t_address,t_uint256))": {
+            "label": "mapping(address => mapping(address => uint256))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_struct(AlbumData)5482_storage)": {
+            "label": "mapping(address => struct AlbumData)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_uint256)": {
+            "label": "mapping(address => uint256)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_struct(RewardData)5503_storage)": {
+            "label": "mapping(uint256 => struct RewardData)",
+            "numberOfBytes": "32"
+          },
+          "t_struct(AlbumData)5482_storage": {
+            "label": "struct AlbumData",
+            "members": [
+              {
+                "label": "artist",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "rewardIndex",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "votes",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "userEarned",
+                "type": "t_mapping(t_address,t_uint256)",
+                "offset": 0,
+                "slot": "3"
+              },
+              {
+                "label": "userIndex",
+                "type": "t_mapping(t_address,t_uint256)",
+                "offset": 0,
+                "slot": "4"
+              },
+              {
+                "label": "userVotes",
+                "type": "t_mapping(t_address,t_uint256)",
+                "offset": 0,
+                "slot": "5"
+              }
+            ],
+            "numberOfBytes": "192"
+          },
+          "t_struct(RewardData)5503_storage": {
+            "label": "struct RewardData",
+            "members": [
+              {
+                "label": "starts",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "interval",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "rewardIndex",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "votes",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "3"
+              },
+              {
+                "label": "userEarned",
+                "type": "t_mapping(t_address,t_uint256)",
+                "offset": 0,
+                "slot": "4"
+              },
+              {
+                "label": "userIndex",
+                "type": "t_mapping(t_address,t_uint256)",
+                "offset": 0,
+                "slot": "5"
+              },
+              {
+                "label": "userVotes",
+                "type": "t_mapping(t_address,t_uint256)",
+                "offset": 0,
+                "slot": "6"
+              }
+            ],
+            "numberOfBytes": "224"
+          },
+          "t_uint256": {
+            "label": "uint256",
+            "numberOfBytes": "32"
+          },
+          "t_uint8": {
+            "label": "uint8",
+            "numberOfBytes": "1"
+          }
+        },
+        "namespaces": {}
       }
     }
   }

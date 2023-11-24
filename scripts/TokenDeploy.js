@@ -11,6 +11,9 @@ async function main() {
   const owner = accounts[0];
   console.log('owner ', owner.address);
 
+  deployNFT();
+  return;
+
   const initialAmount = hre.ethers.parseEther('1000000000');
 
   const token = await hre.ethers.deployContract('MediaBoardToken', [
@@ -23,6 +26,15 @@ async function main() {
       initialAmount
     )}token and transfer to ${owner.address}`
   );
+}
+
+async function deployNFT() {
+  const nft = await hre.ethers.deployContract('TrackNFT', [
+    'testname',
+    'testsymbol',
+  ]);
+  await nft.waitForDeployment();
+  console.log('nft address:', await nft.getAddress());
 }
 
 // We recommend this pattern to be able to use async/await everywhere
