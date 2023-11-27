@@ -32,13 +32,12 @@ contract RiffianAirdrop is EIP712, Ownable, IRiffianAirdrop {
     }
 
     /* ============ State Variables ============ */
-    uint256 public RewardSocialVerify = 1e18;
-    uint256 public RewardFollow = 1e18;
+    uint256 public RewardSocialVerify = 1e16;
+    uint256 public RewardFollow = 1e17;
     uint256 public MaxFollow = 5;
-    uint256 public RewardShare = 1e18;
+    uint256 public RewardShare = 1e17;
     uint256 public MaxShare = 10;
-    uint256 public RewardStake = 5e18;
-    uint256 public RewardVote = 10e18;
+    uint256 public RewardVote = 1e16;
 
     // Is contract paused.
     bool public paused;
@@ -99,20 +98,6 @@ contract RiffianAirdrop is EIP712, Ownable, IRiffianAirdrop {
         (bool success, ) = msg.sender.call{value: RewardShare}(new bytes(0));
         require(success, "Claim failed");
         emit EventClaimShare(msg.sender, _artwork);
-    }
-
-    function claimStake(
-        bytes calldata _signature
-    ) external override onlyNoPaused {
-        require(!isStakingClaimed[msg.sender], "Already claimed");
-        require(
-            _verify(_hashStake(msg.sender), _signature),
-            "Invalid signature"
-        );
-        isStakingClaimed[msg.sender] = true;
-        (bool success, ) = msg.sender.call{value: RewardStake}(new bytes(0));
-        require(success, "Claim failed");
-        emit EventClaimStake(msg.sender);
     }
 
     function claimVote(
@@ -193,15 +178,6 @@ contract RiffianAirdrop is EIP712, Ownable, IRiffianAirdrop {
                         _account,
                         _artwork
                     )
-                )
-            );
-    }
-
-    function _hashStake(address _account) private view returns (bytes32) {
-        return
-            _hashTypedDataV4(
-                keccak256(
-                    abi.encode(keccak256("Stake(address account)"), _account)
                 )
             );
     }

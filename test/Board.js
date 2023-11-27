@@ -1,7 +1,7 @@
 const {
   time,
   loadFixture,
-} = require('@nomicfoundation/hardhat-toolbox/network-helpers');
+} = require('@nomicfoundation/hardhat-network-helpers');
 const { anyValue } = require('@nomicfoundation/hardhat-chai-matchers/withArgs');
 const { expect } = require('chai');
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
