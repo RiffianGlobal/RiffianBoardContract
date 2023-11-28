@@ -14,5 +14,5 @@ interface IRiffianAirdrop {
 
     function claimShare(uint256 artwork, bytes calldata _signature) external;
 
-    function claimVote(bytes calldata _signature) external;
+    function claimVote() external;
 }
