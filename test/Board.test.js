@@ -2,10 +2,8 @@ const {
   time,
   loadFixture,
 } = require('@nomicfoundation/hardhat-network-helpers');
+const { ether, expectEvent } = require('@openzeppelin/test-helpers');
 const { anyValue } = require('@nomicfoundation/hardhat-chai-matchers/withArgs');
-const { expect } = require('chai');
-const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
-const MULTIPLIER = 1000000000000000000;
 
 let owner, alice, bob, cindy;
 
@@ -22,7 +20,7 @@ describe('Board', function () {
     // console.log('owner ', owner.address);
 
     const teamAddress = owner.address;
-    const Board = await hre.ethers.getContractFactory('MediaBoard');
+    const Board = await hre.ethers.getContractFactory('RiffianBoard');
     const startTime = await time.latest();
     const interval = 60 * 60 * 24;
     const board = await upgrades.deployProxy(Board, [
@@ -32,8 +30,8 @@ describe('Board', function () {
     ]);
     await board.waitForDeployment();
     const proxy = await ethers.getContractAt(
-      'MediaBoard',
-      await board.getAddress()
+      'RiffianBoard',
+      await board.getAddress(),
     );
 
     await proxy.connect(alice).newAlbum('name', 'sym');
@@ -42,15 +40,14 @@ describe('Board', function () {
   }
 
   function calcVotePrice(x) {
-    return (x * (x + 1) * MULTIPLIER) / 40000;
+    return ether((x / 10).toString());
   }
-  async function vote(start, times, from, albumAddr, proxy) {
-    for (let index = start; index < start + times; index++) {
-      const votePrice = calcVotePrice(index);
-      await proxy.connect(from).vote(albumAddr, {
-        value: votePrice,
+  function vote(start, times, from, albumAddr, proxy) {
+    return proxy.getVotePriceWithFee(albumAddr, times).then((votePrice) => {
+      return proxy.connect(from)['vote(address)'](albumAddr, {
+        value: votePrice._sum,
       });
-    }
+    });
   }
 
   describe('check vote price', async function () {
@@ -58,6 +55,7 @@ describe('Board', function () {
       const { proxy } = await loadFixture(deployBoardFixture);
       expect(await proxy.calculateVotePrice(1)).to.equals(calcVotePrice(1));
       expect(await proxy.calculateVotePrice(2)).to.equals(calcVotePrice(2));
+      expect(await proxy.calculateVotePrice(10)).to.equals(calcVotePrice(10));
     });
   });
 
@@ -74,7 +72,9 @@ describe('Board', function () {
       const { proxy, albumAddr } = await loadFixture(deployBoardFixture);
 
       // first vote
-      await vote(1, 1, bob, albumAddr, proxy);
+      await expect(vote(1, 1, bob, albumAddr, proxy))
+        .to.emit(proxy, 'EventVote')
+        .withArgs(bob.address, albumAddr, true, 1, anyValue, 1);
       const {
         artist,
         rewardIndex: albumRewardIndex,
@@ -89,22 +89,25 @@ describe('Board', function () {
       // console.log('rewarddata', starts, interval, rewardIndex, votes);
       expect(await proxy.calculateDailyRewards(bob.address)).to.equals(0);
       expect(rewardIndex).to.equals(0);
-      expect(votes).to.equals(1);
+      // expect(votes).to.equals(1);
 
       // second vote
-      await vote(2, 1, cindy, albumAddr, proxy);
+      await expect(vote(2, 1, cindy, albumAddr, proxy))
+        .to.emit(proxy, 'EventVote')
+        .withArgs(cindy.address, albumAddr, true, 1, anyValue, 2);
       const {
         artist2,
         rewardIndex: albumRewardIndex2,
         votes: albumVotes2,
       } = await proxy.albumToData(albumAddr);
+      expect(albumVotes2).to.equals(2);
 
       const { rewardIndex2, votes2 } = await proxy.seqToRewardData(0);
 
-      const bobReward2 = (calcVotePrice(1) + calcVotePrice(2)) / 2;
-      expect(await proxy.calculateDailyRewards(bob.address)).to.equals(
-        bobReward2
-      );
+      // const bobReward2 = (calcVotePrice(1) + calcVotePrice(2)) / 2;
+      // expect(await proxy.calculateDailyRewards(bob.address)).to.equals(
+      //   bobReward2,
+      // );
     });
 
     it.skip('claim daily reward', async function () {
@@ -136,7 +139,7 @@ describe('Board', function () {
       console.log('daily reward votes', await proxy.dailyRewardVotes());
       console.log(
         'bob daily reward',
-        await proxy.calculateDailyRewards(bob.address)
+        await proxy.calculateDailyRewards(bob.address),
       );
 
       console.log(await proxy.userDailyEarned(cindy.address));

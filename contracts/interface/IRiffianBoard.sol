@@ -4,9 +4,15 @@ pragma solidity ^0.8.19;
 interface IRiffianBoard {
     function newAlbum(string memory _name, string memory _symbol) external ;
     function vote(address _album) external payable;
+    function vote(address _album, uint256 _amount) external payable;
+    function retreat(address _album, uint256 _amount) external;
+    function getPrice(uint256 _supply, uint256 _amount) external pure returns (uint256);
+    function getVotePrice(address _album, uint256 _amount) external view returns (uint256);
+    function getRetreatPrice(address _album, uint256 _amount) external view returns (uint256);
+    function getVotePriceWithFee(address _album, uint256 _amount) external view returns (uint256 _sum, uint256 _price, uint256 _protocolFee, uint256 _subjectFee);
     function calculateDailyRewards(address _account) external view returns (uint) ;
     function calculateAlbumRewards(address _account, address _album) external view returns (uint) ;
-    function claimDailyRewards() external returns (uint);
+    //function claimDailyRewards() external returns (uint);
     function claimAlbumRewards(address _album) external returns (uint);
 }
 

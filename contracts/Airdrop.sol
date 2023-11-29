@@ -49,12 +49,12 @@ contract RiffianAirdrop is EIP712, Ownable, IRiffianAirdrop {
     }
 
     /* ============ State Variables ============ */
-    uint256 public RewardSocialVerify = 100 * 1e18;
-    uint256 public RewardFollow = 10 * 1e18;
+    uint256 public RewardSocialVerify = 100 ether;
+    uint256 public RewardFollow = 10 ether;
     uint256 public MaxFollow = 5;
-    uint256 public RewardShare = 10 * 1e18;
+    uint256 public RewardShare = 10 ether;
     uint256 public MaxShare = 10;
-    uint256 public RewardVote = 100 * 1e18;
+    uint256 public RewardVote = 100 ether;
 
     // Is contract paused.
     bool public paused;
