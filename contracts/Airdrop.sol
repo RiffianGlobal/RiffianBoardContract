@@ -75,39 +75,23 @@ contract RiffianAirdrop is EIP712, Ownable, IRiffianAirdrop {
     mapping(address => bool) public isVotingClaimed;
 
     /* ============ Constructor ============ */
-    constructor(
-        address _signer,
-        address _board
-    ) EIP712("RiffianAirdrop", "1.0.0") {
+    constructor(address _signer, address _board) EIP712("RiffianAirdrop", "1.0.0") {
         riffian_airdrop_signer = _signer;
         riffian_board = IRiffianVoted(_board);
     }
 
     /* ============ External Functions ============ */
-    function claimSocialVerify(
-        bytes calldata _signature
-    ) external override onlyNoPaused {
+    function claimSocialVerify(bytes calldata _signature) external override onlyNoPaused {
         require(!isSocialVerifyClaimed[msg.sender], "Already claimed");
-        require(
-            _verify(_hashAccount(msg.sender), _signature),
-            "Invalid signature"
-        );
+        require(_verify(_hashAccount(msg.sender), _signature), "Invalid signature");
         isSocialVerifyClaimed[msg.sender] = true;
-        (bool success, ) = msg.sender.call{value: RewardSocialVerify}(
-            new bytes(0)
-        );
+        (bool success, ) = msg.sender.call{value: RewardSocialVerify}(new bytes(0));
         require(success, "Claim failed");
         emit EventClaimSocial(msg.sender);
     }
 
-    function claimFollow(
-        uint256 _artist,
-        bytes calldata _signature
-    ) external override onlyNoPaused {
-        require(
-            _verify(_hashFollow(msg.sender, _artist), _signature),
-            "Invalid signature"
-        );
+    function claimFollow(uint256 _artist, bytes calldata _signature) external override onlyNoPaused {
+        require(_verify(_hashFollow(msg.sender, _artist), _signature), "Invalid signature");
         ClaimState storage claimState = followClaimed[msg.sender];
         require(!claimState.claimed[_artist], "Already claimed");
         uint256 timeInDays = block.timestamp / dayInSecs;
@@ -124,14 +108,8 @@ contract RiffianAirdrop is EIP712, Ownable, IRiffianAirdrop {
         emit EventClaimFollow(msg.sender, _artist);
     }
 
-    function claimShare(
-        uint256 _artwork,
-        bytes calldata _signature
-    ) external override onlyNoPaused {
-        require(
-            _verify(_hashShare(msg.sender, _artwork), _signature),
-            "Invalid signature"
-        );
+    function claimShare(uint256 _artwork, bytes calldata _signature) external override onlyNoPaused {
+        require(_verify(_hashShare(msg.sender, _artwork), _signature), "Invalid signature");
         ClaimState storage claimState = shareClaimed[msg.sender];
         require(!claimState.claimed[_artwork], "Already claimed");
         uint256 timeInDays = block.timestamp / dayInSecs;
@@ -176,10 +154,7 @@ contract RiffianAirdrop is EIP712, Ownable, IRiffianAirdrop {
      * PRIVILEGED MODULE FUNCTION. Function that update riffian signer address.
      */
     function updateRiffianSigner(address newAddress) external onlyOwner {
-        require(
-            newAddress != address(0),
-            "Riffian signer address must not be null address"
-        );
+        require(newAddress != address(0), "Riffian signer address must not be null address");
         riffian_airdrop_signer = newAddress;
     }
 
@@ -187,61 +162,26 @@ contract RiffianAirdrop is EIP712, Ownable, IRiffianAirdrop {
      * PRIVILEGED MODULE FUNCTION. Function that update riffian board address.
      */
     function updateRiffianBoard(address newAddress) external onlyOwner {
-        require(
-            newAddress != address(0),
-            "Riffian board address must not be null address"
-        );
+        require(newAddress != address(0), "Riffian board address must not be null address");
         riffian_board = IRiffianVoted(newAddress);
     }
 
     /* ============ Internal Functions ============ */
 
-    function _verify(
-        bytes32 hash,
-        bytes calldata signature
-    ) private view returns (bool) {
+    function _verify(bytes32 hash, bytes calldata signature) private view returns (bool) {
         return ECDSA.recover(hash, signature) == riffian_airdrop_signer;
     }
 
     function _hashAccount(address _account) private view returns (bytes32) {
-        return
-            _hashTypedDataV4(
-                keccak256(
-                    abi.encode(keccak256("Account(address account)"), _account)
-                )
-            );
+        return _hashTypedDataV4(keccak256(abi.encode(keccak256("Account(address account)"), _account)));
     }
 
-    function _hashFollow(
-        address _account,
-        uint256 _artist
-    ) private view returns (bytes32) {
-        return
-            _hashTypedDataV4(
-                keccak256(
-                    abi.encode(
-                        keccak256("Follow(address account,uint256 artist)"),
-                        _account,
-                        _artist
-                    )
-                )
-            );
+    function _hashFollow(address _account, uint256 _artist) private view returns (bytes32) {
+        return _hashTypedDataV4(keccak256(abi.encode(keccak256("Follow(address account,uint256 artist)"), _account, _artist)));
     }
 
-    function _hashShare(
-        address _account,
-        uint256 _artwork
-    ) private view returns (bytes32) {
-        return
-            _hashTypedDataV4(
-                keccak256(
-                    abi.encode(
-                        keccak256("Share(address account,uint256 artwork)"),
-                        _account,
-                        _artwork
-                    )
-                )
-            );
+    function _hashShare(address _account, uint256 _artwork) private view returns (bytes32) {
+        return _hashTypedDataV4(keccak256(abi.encode(keccak256("Share(address account,uint256 artwork)"), _account, _artwork)));
     }
 
     function _validateOnlyNotPaused() internal view {
