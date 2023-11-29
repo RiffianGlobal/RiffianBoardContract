@@ -3,11 +3,11 @@ const {
   BN,
   constants,
   ether,
+  expectEvent,
   expectRevert,
   send,
   time,
 } = require("@openzeppelin/test-helpers");
-const expectEvent = require("@openzeppelin/test-helpers/src/expectEvent");
 
 const Contract = artifacts.require("RiffianAirdrop");
 const MockBoard = artifacts.require("AirdropVoted");
@@ -38,10 +38,10 @@ contract("RiffianAirdrop", (accounts) => {
   const [deployer, alice, bob] = accounts;
 
   let domain = {
-    name: "RiffianAirdrop",
-    version: "1.0.0",
-    chainId: 0,
-    verifyingContract: constants.ZERO_ADDRESS,
+    name: "RiffianAirdrop", // should be same to eip712 contract constructor.
+    version: "1.0.0", // should be same to eip712 contract constructor.
+    chainId: 0, // will be set to real chain id when `before` is called.
+    verifyingContract: constants.ZERO_ADDRESS, // will be set to contract address when `beforeEach` is called.
   };
 
   function getSignature(signer, types, values) {
