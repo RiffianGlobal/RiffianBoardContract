@@ -32,8 +32,8 @@ contract RiffianBoard is Initializable, OwnableUpgradeable, IRiffianBoard {
 
     // daily rewards related
     uint public startTimeStamp; // the start timestamp of the periodic reward
-    uint public interval; // the seconds of a reward period
-    uint public currentSeqNumber; // the seq number of reward
+    uint constant interval = 1 weeks; // the seconds of a reward period
+
     mapping(uint => RewardData) public seqToRewardData; // seq => reward data
 
     // subject rewards related
@@ -41,9 +41,15 @@ contract RiffianBoard is Initializable, OwnableUpgradeable, IRiffianBoard {
     mapping(bytes32 => uint) public subjectRewardsBalance; // pool address => pool reward tokens
     mapping(bytes32 => mapping(address => uint)) public userSubjectRewardsEarned; // subject => user => earn
     mapping(bytes32 => mapping(address => uint)) public userSubjectRewardIndex; // subject => user => index
+
+    mapping(uint256 => uint256) public weeklyVotes; // week => votes
+    mapping(address => mapping(uint256 => uint256)) public userWeeklyVotes; // user => week => votes
+
     mapping(bytes32 => mapping(address => uint)) public userSubjectVotes; // subject => user => votes
+
     mapping(address => EnumerableSetUpgradeable.Bytes32Set) private socialPlatformHash; // artist => social platforms
     mapping(address => mapping(bytes32 => SocialData)) public socialPlatform; // artist => social platform hash => social data
+
     mapping(address => address) public agentAddress; // artist => agent
 
     // EVENTS
@@ -56,12 +62,11 @@ contract RiffianBoard is Initializable, OwnableUpgradeable, IRiffianBoard {
     // An event that someone binds a social account on `platform` with id `id` and a verification `uri` that should contain `account` in content.
     event EventBind(address account, string platform, string id, string uri);
 
-    function initialize(address _feeDestination, uint _startTimeStamp, uint _interval) public initializer {
+    function initialize(address _feeDestination, uint _startTimeStamp) public initializer {
         __Ownable_init();
 
         protocolFeeDestination = address(_feeDestination);
         startTimeStamp = _startTimeStamp;
-        interval = _interval;
 
         rewardIntervalMin = 60 * 60 * 24;
         protocolFeePercents = 2; // 2%
@@ -87,16 +92,6 @@ contract RiffianBoard is Initializable, OwnableUpgradeable, IRiffianBoard {
     function setFeeDestination(address _feeDestination) external onlyOwner {
         require(_feeDestination != address(0), "invalid team address");
         protocolFeeDestination = _feeDestination;
-    }
-
-    function setInterval(uint _interval) external onlyOwner {
-        require(_interval > rewardIntervalMin);
-        interval = _interval;
-    }
-
-    function setStartTimeStamp(uint _startTimeStamp) external onlyOwner {
-        require(_startTimeStamp > 0);
-        startTimeStamp = _startTimeStamp;
     }
 
     function pauseVote() external onlyOwner {}
@@ -157,6 +152,13 @@ contract RiffianBoard is Initializable, OwnableUpgradeable, IRiffianBoard {
         uint256 oldAmount = userSubjectVotes[_subject][msg.sender];
         userSubjectVotes[_subject][msg.sender] = oldAmount + _amount;
 
+        // increate weekly votes
+        uint256 week = _getWeek();
+        oldAmount = weeklyVotes[week];
+        weeklyVotes[week] = oldAmount + _amount;
+        oldAmount = userWeeklyVotes[msg.sender][week];
+        userWeeklyVotes[msg.sender][week] = oldAmount + _amount;
+
         // increate subject votes
         subjectToData[_subject].votes += _amount;
 
@@ -181,6 +183,19 @@ contract RiffianBoard is Initializable, OwnableUpgradeable, IRiffianBoard {
         // decrease user votes
         uint256 newAmount = userSubjectVotes[_subject][msg.sender] - _amount;
         userSubjectVotes[_subject][msg.sender] = newAmount;
+
+        // decreate weekly votes
+        uint256 week = _getWeek();
+        uint256 oldAmount = userWeeklyVotes[msg.sender][week];
+        if (oldAmount > 0) {
+            uint256 amountToDecrease = _amount;
+            if (oldAmount < _amount) {
+                amountToDecrease = oldAmount;
+            }
+            userWeeklyVotes[msg.sender][week] = oldAmount - amountToDecrease;
+            oldAmount = weeklyVotes[week];
+            weeklyVotes[week] = oldAmount - amountToDecrease;
+        }
 
         // decreate subject votes
         subjectToData[_subject].votes = supply - _amount;
@@ -221,9 +236,9 @@ contract RiffianBoard is Initializable, OwnableUpgradeable, IRiffianBoard {
 
     function calculateDailyRewards(address _account) public view returns (uint) {
         // RewardData memory reward = seqToRewardData[currentSeqNumber];
-        uint votes = seqToRewardData[currentSeqNumber].userVotes[_account];
+        uint votes = seqToRewardData[_getWeek()].userVotes[_account];
         // console.log("calculate daily rewards", votes, dailyRewardIndex , userDailyRewardIndex[_account]);
-        return (votes * (seqToRewardData[currentSeqNumber].rewardIndex - seqToRewardData[currentSeqNumber].userIndex[_account]));
+        return (votes * (seqToRewardData[_getWeek()].rewardIndex - seqToRewardData[_getWeek()].userIndex[_account]));
     }
 
     function _updateDailyRewards(address _account, uint _seq) private {
@@ -260,19 +275,14 @@ contract RiffianBoard is Initializable, OwnableUpgradeable, IRiffianBoard {
         subjectRewardsBalance[_subject] += 1;
     }
 
-    function _distributeFees(bytes32 _subject, uint256 _protocolFee, uint256 _subjectFee, uint256 _agentFee, uint256 _boardFee) internal {
-        //
-        uint seq = (block.timestamp - startTimeStamp) / interval;
-        require(seq >= currentSeqNumber, "invalid current seq number");
-        // RewardData storage rewardData = seqToRewardData(seq);
-        if (seq > currentSeqNumber) {
-            currentSeqNumber = seq;
-            // emit NewRewardPool(seq);
-        }
+    function _getWeek() public view returns (uint256) {
+        return block.timestamp - ((block.timestamp - startTimeStamp) % interval);
+    }
 
+    function _distributeFees(bytes32 _subject, uint256 _protocolFee, uint256 _subjectFee, uint256 _agentFee, uint256 _boardFee) internal {
         // update daily rewards
-        _updateDailyRewards(msg.sender, currentSeqNumber);
-        _updateDailyRewardsIndex(_boardFee, currentSeqNumber);
+        _updateDailyRewards(msg.sender, _getWeek());
+        _updateDailyRewardsIndex(_boardFee, _getWeek());
 
         // // update subject rewards
         // _updateSubjectRewards(msg.sender, _subject);
