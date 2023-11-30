@@ -34,25 +34,26 @@ describe('Board', function () {
       await board.getAddress(),
     );
 
-    await proxy.connect(alice).newAlbum('name', 'sym');
-    const albumAddr = await proxy.albumsList(0);
-    return { proxy, albumAddr };
+    await proxy.connect(alice).bindSocial('platform', 'id', 'uri');
+    await proxy.connect(alice).newSubject('name', 'uri', 'image');
+    const subjectAddr = await proxy.subjectsList(0);
+    return { proxy, subjectAddr };
   }
 
   function calcVotePrice(x) {
     return ether((x / 10).toString());
   }
 
-  function vote(times, from, albumAddr, proxy) {
-    return proxy.getVotePriceWithFee(albumAddr, times).then((votePrice) => {
-      return proxy.connect(from)['vote(address,uint256)'](albumAddr, times, {
+  function vote(times, from, subjectAddr, proxy) {
+    return proxy.getVotePriceWithFee(subjectAddr, times).then((votePrice) => {
+      return proxy.connect(from)['vote(bytes32,uint256)'](subjectAddr, times, {
         value: votePrice._sum,
       });
     });
   }
 
-  function retreat(times, from, albumAddr, proxy) {
-    return proxy.connect(from).retreat(albumAddr, times);
+  function retreat(times, from, subjectAddr, proxy) {
+    return proxy.connect(from).retreat(subjectAddr, times);
   }
 
   describe('check vote price', async function () {
@@ -64,34 +65,57 @@ describe('Board', function () {
     });
   });
 
-  describe('Vote', async function () {
-    it('create an album', async function () {
-      const { proxy, albumAddress } = await loadFixture(deployBoardFixture);
+  describe('Bind social', async function () {
+    it('bind and unbind', async function () {
+      const { proxy, subjectAddress } = await loadFixture(deployBoardFixture);
 
-      expect(await proxy.connect(alice).newAlbum('name', 'sym'))
-        .to.emit(proxy, 'NewAlbum')
+      expect(await proxy.connect(alice).bindSocial('twitter', '1234', '2345'))
+        .to.emit(proxy, 'BindSocial')
+        .withArgs(alice.address, 'twitter', '1234', '2345');
+
+      expect(await proxy.getSocials(alice.address))
+        .to.be.an('array')
+        .that.have.lengthOf(2)
+        .that.deep.contains(['twitter', '1234', '2345']);
+
+      expect(await proxy.connect(alice).unbindSocial('twitter'))
+        .to.emit(proxy, 'BindSocial')
+        .withArgs(alice.address, 'twitter', '', '');
+
+      expect(await proxy.getSocials(alice.address))
+        .to.be.an('array')
+        .that.have.lengthOf(1);
+    });
+  });
+
+  describe('Vote', async function () {
+    it('create an subject', async function () {
+      const { proxy, subjectAddress } = await loadFixture(deployBoardFixture);
+
+      expect(await proxy.connect(alice).newSubject('name', 'uri', 'image'))
+        .to.emit(proxy, 'NewSubject')
         .withArgs(anyValue);
     });
 
-    it('vote an album and retreat', async function () {
-      const { proxy, albumAddr } = await loadFixture(deployBoardFixture);
+    it('vote an subject and retreat', async function () {
+      const { proxy, subjectAddr } = await loadFixture(deployBoardFixture);
 
       const trackerAlice = await balance.tracker(alice.address);
       const trackerBob = await balance.tracker(bob.address);
       const trackerCindy = await balance.tracker(cindy.address);
       const trackerContract = await balance.tracker(await proxy.getAddress());
       // first vote
-      await expect(vote(1, bob, albumAddr, proxy))
+      await expect(vote(1, bob, subjectAddr, proxy))
         .to.emit(proxy, 'EventVote')
-        .withArgs(bob.address, albumAddr, true, 1, anyValue, 1);
+        .withArgs(bob.address, subjectAddr, true, 1, anyValue, 1);
       const {
         artist,
-        rewardIndex: albumRewardIndex,
-        votes: albumVotes,
-      } = await proxy.albumToData(albumAddr);
+        rewardIndex: subjectRewardIndex,
+        votes: subjectVotes,
+      } = await proxy.subjectToData(subjectAddr);
       expect(artist).to.equals(alice.address);
-      expect(albumRewardIndex).to.equals(0);
-      expect(albumVotes).to.equals(1);
+      expect(subjectRewardIndex).to.equals(0);
+      expect(subjectVotes).to.equals(1);
       // check artist fee
       expect(await trackerAlice.delta()).to.equals(
         calcVotePrice(1).mul(new BN('4')).div(new BN('100')),
@@ -115,15 +139,15 @@ describe('Board', function () {
       // expect(votes).to.equals(1);
 
       // second vote
-      await expect(vote(1, cindy, albumAddr, proxy))
+      await expect(vote(1, cindy, subjectAddr, proxy))
         .to.emit(proxy, 'EventVote')
-        .withArgs(cindy.address, albumAddr, true, 1, anyValue, 2);
+        .withArgs(cindy.address, subjectAddr, true, 1, anyValue, 2);
       const {
         artist2,
-        rewardIndex: albumRewardIndex2,
-        votes: albumVotes2,
-      } = await proxy.albumToData(albumAddr);
-      expect(albumVotes2).to.equals(2);
+        rewardIndex: subjectRewardIndex2,
+        votes: subjectVotes2,
+      } = await proxy.subjectToData(subjectAddr);
+      expect(subjectVotes2).to.equals(2);
       expect(await trackerAlice.delta()).to.equals(
         calcVotePrice(2).mul(new BN('4')).div(new BN('100')),
       );
@@ -137,14 +161,18 @@ describe('Board', function () {
       );
 
       // multiple vote
-      await expect(vote(3, cindy, albumAddr, proxy))
+      await expect(vote(3, cindy, subjectAddr, proxy))
         .to.emit(proxy, 'EventVote')
-        .withArgs(cindy.address, albumAddr, true, 3, anyValue, 5);
+        .withArgs(cindy.address, subjectAddr, true, 3, anyValue, 5);
       await proxy
-        .albumToData(albumAddr)
+        .subjectToData(subjectAddr)
         .then(
-          ({ artist2, rewardIndex: albumRewardIndex2, votes: albumVotes2 }) => {
-            expect(albumVotes2).to.equals(5);
+          ({
+            artist2,
+            rewardIndex: subjectRewardIndex2,
+            votes: subjectVotes2,
+          }) => {
+            expect(subjectVotes2).to.equals(5);
           },
         );
       var price = calcVotePrice(3).add(calcVotePrice(4)).add(calcVotePrice(5));
@@ -164,16 +192,20 @@ describe('Board', function () {
 
       // retreat
       // first retreat
-      await expect(retreat(1, bob, albumAddr, proxy))
+      await expect(retreat(1, bob, subjectAddr, proxy))
         .to.emit(proxy, 'EventVote')
-        .withArgs(bob.address, albumAddr, false, 1, anyValue, 4);
+        .withArgs(bob.address, subjectAddr, false, 1, anyValue, 4);
       await proxy
-        .albumToData(albumAddr)
+        .subjectToData(subjectAddr)
         .then(
-          ({ artist, rewardIndex: albumRewardIndex, votes: albumVotes }) => {
+          ({
+            artist,
+            rewardIndex: subjectRewardIndex,
+            votes: subjectVotes,
+          }) => {
             expect(artist).to.equals(alice.address);
-            expect(albumRewardIndex).to.equals(0);
-            expect(albumVotes).to.equals(4);
+            expect(subjectRewardIndex).to.equals(0);
+            expect(subjectVotes).to.equals(4);
           },
         );
       // check artist balance
@@ -186,21 +218,25 @@ describe('Board', function () {
       expect(await trackerContract.delta()).to.equals(calcVotePrice(5).neg());
 
       // retreat without holding
-      await expect(retreat(1, bob, albumAddr, proxy)).to.be.revertedWith(
+      await expect(retreat(1, bob, subjectAddr, proxy)).to.be.revertedWith(
         'Insufficient votes',
       );
 
       // multiple retreat
-      await expect(retreat(3, cindy, albumAddr, proxy))
+      await expect(retreat(3, cindy, subjectAddr, proxy))
         .to.emit(proxy, 'EventVote')
-        .withArgs(cindy.address, albumAddr, false, 3, anyValue, 1);
+        .withArgs(cindy.address, subjectAddr, false, 3, anyValue, 1);
       await proxy
-        .albumToData(albumAddr)
+        .subjectToData(subjectAddr)
         .then(
-          ({ artist, rewardIndex: albumRewardIndex, votes: albumVotes }) => {
+          ({
+            artist,
+            rewardIndex: subjectRewardIndex,
+            votes: subjectVotes,
+          }) => {
             expect(artist).to.equals(alice.address);
-            expect(albumRewardIndex).to.equals(0);
-            expect(albumVotes).to.equals(1);
+            expect(subjectRewardIndex).to.equals(0);
+            expect(subjectVotes).to.equals(1);
           },
         );
       // check artist balance
@@ -217,13 +253,13 @@ describe('Board', function () {
     it.skip('claim daily reward', async function () {
       const { proxy } = await loadFixture(deployBoardFixture);
 
-      expect(await proxy.connect(alice).newAlbum('name', 'sym'))
-        .to.emit(proxy, 'NewAlbum')
+      expect(await proxy.connect(alice).newSubject('name', 'sym'))
+        .to.emit(proxy, 'NewSubject')
         .withArgs(anyValue);
-      const newAlbum = await proxy.albumsList(0);
+      const newSubject = await proxy.subjectsList(0);
 
       const votePrice = calcVotePrice(1);
-      await proxy.connect(bob).vote(newAlbum, {
+      await proxy.connect(bob).vote(newSubject, {
         value: votePrice,
       });
       expect(await proxy.userDailyRewardIndex(bob.address)).to.equals(0);
@@ -233,7 +269,7 @@ describe('Board', function () {
       expect(await proxy.dailyRewardVotes()).to.equals(0);
 
       const votePrice2 = calcVotePrice(2);
-      await proxy.connect(cindy).vote(newAlbum, {
+      await proxy.connect(cindy).vote(newSubject, {
         value: votePrice2, //ethers.parseEther(votePrice.toString()),
       });
       console.log('bob index', await proxy.userDailyRewardIndex(bob.address));
@@ -250,6 +286,6 @@ describe('Board', function () {
       console.log(await proxy.userDailyBalance(alice.address));
       console.log(await proxy.userDailyBalance(cindy.address));
     });
-    it('claim album reward', async function () {});
+    it('claim subject reward', async function () {});
   });
 });

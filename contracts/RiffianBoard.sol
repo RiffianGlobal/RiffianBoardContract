@@ -4,14 +4,15 @@ pragma solidity ^0.8.19;
 
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/structs/EnumerableSetUpgradeable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "./interface/IRiffianBoard.sol";
-import "./AlbumNFT.sol";
 
-// import "hardhat/console.sol";
+import "hardhat/console.sol";
 
 contract RiffianBoard is Initializable, OwnableUpgradeable, IRiffianBoard {
+    using EnumerableSetUpgradeable for EnumerableSetUpgradeable.Bytes32Set;
     // constants
     uint private constant MULTIPLIER = 1e18;
 
@@ -23,8 +24,8 @@ contract RiffianBoard is Initializable, OwnableUpgradeable, IRiffianBoard {
     uint public boardFeePercents; // to board reward pool
 
     address public protocolFeeDestination;
-    mapping(address => AlbumData) public albumToData; // album => votes number
-    address[] public albumsList;
+    mapping(bytes32 => SubjectData) public subjectToData; // subject => votes number
+    bytes32[] public subjectsList;
 
     // guardian
     address public guardian;
@@ -35,20 +36,25 @@ contract RiffianBoard is Initializable, OwnableUpgradeable, IRiffianBoard {
     uint public currentSeqNumber; // the seq number of reward
     mapping(uint => RewardData) public seqToRewardData; // seq => reward data
 
-    // album rewards related
-    mapping(address => uint) public albumRewardsIndex; // pool address => pool reward index
-    mapping(address => uint) public albumRewardsBalance; // pool address => pool reward tokens
-    mapping(address => mapping(address => uint)) public userAlbumRewardsEarned; // album => user => earn
-    mapping(address => mapping(address => uint)) public userAlbumRewardIndex; // album => user => index
-    mapping(address => mapping(address => uint)) public userAlbumVotes; // album => user => votes
+    // subject rewards related
+    mapping(bytes32 => uint) public subjectRewardsIndex; // pool address => pool reward index
+    mapping(bytes32 => uint) public subjectRewardsBalance; // pool address => pool reward tokens
+    mapping(bytes32 => mapping(address => uint)) public userSubjectRewardsEarned; // subject => user => earn
+    mapping(bytes32 => mapping(address => uint)) public userSubjectRewardIndex; // subject => user => index
+    mapping(bytes32 => mapping(address => uint)) public userSubjectVotes; // subject => user => votes
+    mapping(address => EnumerableSetUpgradeable.Bytes32Set) private socialPlatformHash; // artist => social platforms
+    mapping(address => mapping(bytes32 => SocialData)) public socialPlatform; // artist => social platform hash => social data
+    mapping(address => address) public agentAddress; // artist => agent
 
     // EVENTS
-    event NewRewardDistribution(uint _team, uint _artist, uint _daily, uint _album);
-    event NewAlbum(address owner, address album);
-    event NewVote(address from, address to, uint amount, uint dailyRewardAmount, uint albumPoolRewardAmount, uint teamRewardAmount, uint artistRewardAmount, uint seq);
-    event EventVote(address voter, address album, bool isVote, uint256 amount, uint256 value, uint256 supply);
-    event ClaimAlbumRewards(address account, address album, uint reward);
+    event NewRewardDistribution(uint _team, uint _artist, uint _daily, uint _subject);
+    event NewSubject(address owner, bytes32 subject, string name, string image, string uri);
+    event NewVote(address from, address to, uint amount, uint dailyRewardAmount, uint subjectPoolRewardAmount, uint teamRewardAmount, uint artistRewardAmount, uint seq);
+    event EventVote(address voter, bytes32 subject, bool isVote, uint256 amount, uint256 value, uint256 supply);
+    event ClaimSubjectRewards(address account, bytes32 subject, uint reward);
     event ClaimDailyRewards(address account, uint reward);
+    // An event that someone binds a social account on `platform` with id `id` and a verification `uri` that should contain `account` in content.
+    event EventBind(address account, string platform, string id, string uri);
 
     function initialize(address _feeDestination, uint _startTimeStamp, uint _interval) public initializer {
         __Ownable_init();
@@ -95,40 +101,70 @@ contract RiffianBoard is Initializable, OwnableUpgradeable, IRiffianBoard {
 
     function pauseVote() external onlyOwner {}
 
-    function newAlbum(string memory _name, string memory _symbol) external {
-        TrackNFT album = new TrackNFT(_name, _symbol);
-        albumsList.push(address(album));
-        albumRewardsIndex[address(album)] = 0;
-        albumRewardsBalance[address(album)] = 0;
+    function bindAgent(address _agent, bytes32 _checksum) public {
+        require(agentAddress[msg.sender] == address(0), "Already bound");
+        require(keccak256(abi.encodePacked(_agent, address(this))) == _checksum, "Invalid checksum");
+        agentAddress[msg.sender] = _agent;
+    }
 
-        AlbumData storage data = albumToData[address(album)];
+    function bindSocial(string calldata _platform, string calldata _id, string calldata _uri) public {
+        bytes32 platformHash = keccak256(bytes(_platform));
+        socialPlatformHash[msg.sender].add(platformHash);
+        SocialData storage data = socialPlatform[msg.sender][platformHash];
+        data.platform = _platform;
+        data.id = _id;
+        data.uri = _uri;
+        emit EventBind(msg.sender, _platform, _id, _uri);
+    }
+
+    function unbindSocial(string calldata _platform) public {
+        bytes32 platformHash = keccak256(abi.encodePacked(_platform));
+        socialPlatformHash[msg.sender].remove(platformHash);
+        delete socialPlatform[msg.sender][platformHash];
+        emit EventBind(msg.sender, _platform, "", "");
+    }
+
+    function getSocials(address _owner) public view returns (SocialData[] memory _socials) {
+        uint length = socialPlatformHash[_owner].length();
+        _socials = new SocialData[](length);
+        for (uint i = 0; i < length; i++) {
+            _socials[i] = socialPlatform[_owner][socialPlatformHash[_owner].at(i)];
+        }
+    }
+
+    function newSubject(string memory _name, string memory _image, string memory _uri) external {
+        require(socialPlatformHash[msg.sender].length() != 0, "Bind at least one social account to continue");
+        // TrackNFT subject = new TrackNFT(_name, _symbol);
+        bytes32 subject = keccak256(abi.encodePacked(msg.sender, _name));
+        subjectsList.push(subject);
+        subjectRewardsIndex[subject] = 0;
+        subjectRewardsBalance[subject] = 0;
+        SubjectData storage data = subjectToData[subject];
         data.artist = msg.sender;
-        // console.log("new album address", address(album));
-
-        emit NewAlbum(msg.sender, address(album));
+        data.name = _name;
+        data.image = _image;
+        data.uri = _uri;
+        // console.log("new subject address", address(subject));
+        emit NewSubject(msg.sender, subject, _name, _image, _uri);
     }
 
-    function vote(address _album) external payable {
-        vote(_album, 1);
-    }
-
-    function vote(address _album, uint256 _amount) public payable {
+    function vote(bytes32 _subject, uint256 _amount) public payable {
         // check insufficient payment
-        (uint256 value, uint256 price, uint256 protocolFee, uint256 subjectFee, uint256 agentFee, uint256 boardFee) = getVotePriceWithFee(_album, _amount);
+        (uint256 value, uint256 price, uint256 protocolFee, uint256 subjectFee, uint256 agentFee, uint256 boardFee) = getVotePriceWithFee(_subject, _amount);
         require(msg.value >= value, "Insufficient payment");
 
         // increase user votes
-        uint256 oldAmount = userAlbumVotes[_album][msg.sender];
-        userAlbumVotes[_album][msg.sender] = oldAmount + _amount;
+        uint256 oldAmount = userSubjectVotes[_subject][msg.sender];
+        userSubjectVotes[_subject][msg.sender] = oldAmount + _amount;
 
-        // increate album votes
-        albumToData[_album].votes += _amount;
+        // increate subject votes
+        subjectToData[_subject].votes += _amount;
 
-        uint256 _votes = albumToData[_album].votes;
-        emit EventVote(msg.sender, _album, true, _amount, price, _votes);
+        uint256 _votes = subjectToData[_subject].votes;
+        emit EventVote(msg.sender, _subject, true, _amount, price, _votes);
 
         // distrubte fees
-        _distributeFees(_album, protocolFee, subjectFee, agentFee, boardFee);
+        _distributeFees(_subject, protocolFee, subjectFee, agentFee, boardFee);
 
         // refund
         uint refund = msg.value - value;
@@ -138,19 +174,19 @@ contract RiffianBoard is Initializable, OwnableUpgradeable, IRiffianBoard {
         }
     }
 
-    function retreat(address _album, uint256 _amount) external {
-        uint256 supply = albumToData[_album].votes;
-        require(supply >= _amount && userAlbumVotes[_album][msg.sender] >= _amount, "Insufficient votes");
+    function retreat(bytes32 _subject, uint256 _amount) external {
+        uint256 supply = subjectToData[_subject].votes;
+        require(supply >= _amount && userSubjectVotes[_subject][msg.sender] >= _amount, "Insufficient votes");
 
         // decrease user votes
-        uint256 newAmount = userAlbumVotes[_album][msg.sender] - _amount;
-        userAlbumVotes[_album][msg.sender] = newAmount;
+        uint256 newAmount = userSubjectVotes[_subject][msg.sender] - _amount;
+        userSubjectVotes[_subject][msg.sender] = newAmount;
 
-        // decreate album votes
-        albumToData[_album].votes = supply - _amount;
+        // decreate subject votes
+        subjectToData[_subject].votes = supply - _amount;
 
         uint256 price = getPrice(supply - _amount, _amount);
-        emit EventVote(msg.sender, _album, false, _amount, price, albumToData[_album].votes);
+        emit EventVote(msg.sender, _subject, false, _amount, price, subjectToData[_subject].votes);
 
         (bool success, ) = msg.sender.call{value: price}("");
         require(success, "Failed to send funds");
@@ -163,16 +199,19 @@ contract RiffianBoard is Initializable, OwnableUpgradeable, IRiffianBoard {
         return (summation * 1 ether) / 10;
     }
 
-    function getVotePrice(address _album, uint256 _amount) public view returns (uint256) {
-        return getPrice(albumToData[_album].votes, _amount);
+    function getVotePrice(bytes32 _subject, uint256 _amount) public view returns (uint256) {
+        return getPrice(subjectToData[_subject].votes, _amount);
     }
 
-    function getRetreatPrice(address _album, uint256 _amount) public view returns (uint256) {
-        return getPrice(albumToData[_album].votes - _amount, _amount);
+    function getRetreatPrice(bytes32 _subject, uint256 _amount) public view returns (uint256) {
+        return getPrice(subjectToData[_subject].votes - _amount, _amount);
     }
 
-    function getVotePriceWithFee(address _album, uint256 _amount) public view returns (uint256 _sum, uint256 _price, uint256 _protocolFee, uint256 _subjectFee, uint256 _agentFee, uint256 _boardFee) {
-        _price = getVotePrice(_album, _amount);
+    function getVotePriceWithFee(
+        bytes32 _subject,
+        uint256 _amount
+    ) public view returns (uint256 _sum, uint256 _price, uint256 _protocolFee, uint256 _subjectFee, uint256 _agentFee, uint256 _boardFee) {
+        _price = getVotePrice(_subject, _amount);
         _protocolFee = (_price * protocolFeePercents) / 100;
         _subjectFee = (_price * subjectFeePercents) / 100;
         _agentFee = (_price * agentFeePercents) / 100;
@@ -203,25 +242,25 @@ contract RiffianBoard is Initializable, OwnableUpgradeable, IRiffianBoard {
         reward.votes += 1;
     }
 
-    function calculateAlbumRewards(address _account, address _album) public view returns (uint) {
-        uint votes = userAlbumVotes[_album][_account];
-        return (votes * (albumRewardsIndex[_album] - userAlbumRewardIndex[_album][_account]));
+    function calculateSubjectRewards(address _account, bytes32 _subject) public view returns (uint) {
+        uint votes = userSubjectVotes[_subject][_account];
+        return (votes * (subjectRewardsIndex[_subject] - userSubjectRewardIndex[_subject][_account]));
     }
 
-    function _updateAlbumRewards(address _account, address _album) private {
-        userAlbumRewardsEarned[_album][_account] += calculateAlbumRewards(_account, _album);
-        userAlbumRewardIndex[_album][_account] = albumRewardsIndex[_album];
-        userAlbumVotes[_album][_account] += 1;
+    function _updateSubjectRewards(address _account, bytes32 _subject) private {
+        userSubjectRewardsEarned[_subject][_account] += calculateSubjectRewards(_account, _subject);
+        userSubjectRewardIndex[_subject][_account] = subjectRewardsIndex[_subject];
+        userSubjectVotes[_subject][_account] += 1;
     }
 
-    function _updateAlbumRewardsIndex(uint _amount, address _album) private {
-        if (albumRewardsBalance[_album] > 0) {
-            albumRewardsIndex[_album] += (_amount * MULTIPLIER) / albumRewardsBalance[_album];
+    function _updateSubjectRewardsIndex(uint _amount, bytes32 _subject) private {
+        if (subjectRewardsBalance[_subject] > 0) {
+            subjectRewardsIndex[_subject] += (_amount * MULTIPLIER) / subjectRewardsBalance[_subject];
         }
-        albumRewardsBalance[_album] += 1;
+        subjectRewardsBalance[_subject] += 1;
     }
 
-    function _distributeFees(address _album, uint256 _protocolFee, uint256 _subjectFee, uint256 _agentFee, uint256 _boardFee) internal {
+    function _distributeFees(bytes32 _subject, uint256 _protocolFee, uint256 _subjectFee, uint256 _agentFee, uint256 _boardFee) internal {
         //
         uint seq = (block.timestamp - startTimeStamp) / interval;
         require(seq >= currentSeqNumber, "invalid current seq number");
@@ -235,21 +274,23 @@ contract RiffianBoard is Initializable, OwnableUpgradeable, IRiffianBoard {
         _updateDailyRewards(msg.sender, currentSeqNumber);
         _updateDailyRewardsIndex(_boardFee, currentSeqNumber);
 
-        // // update album rewards
-        // _updateAlbumRewards(msg.sender, _album);
-        // _updateAlbumRewardsIndex(_boardFee, _album);
+        // // update subject rewards
+        // _updateSubjectRewards(msg.sender, _subject);
+        // _updateSubjectRewardsIndex(_boardFee, _subject);
 
         // distribute to others
         // console.log("send amount", _amount);
-        // console.log("send to artist", albumToData[_album].artist, artistRewardAmount);
+        // console.log("send to artist", subjectToData[_subject].artist, artistRewardAmount);
         // console.log("send to team", teamRewardAmount);
         // console.log("send to daily pool", dailyRewardAmount);
-        // console.log("send to album pool", albumPoolRewardAmount);
+        // console.log("send to subject pool", subjectPoolRewardAmount);
 
-        (bool sent, ) = albumToData[_album].artist.call{value: _subjectFee}("");
+        address artist = subjectToData[_subject].artist;
+        (bool sent, ) = artist.call{value: _subjectFee}("");
         require(sent, "Failed to send token to artist");
-        // @todo send to agent instead of artist if exists
-        (sent, ) = albumToData[_album].artist.call{value: _agentFee}("");
+        address agent = agentAddress[artist];
+        if (agent == address(0)) agent = artist;
+        (sent, ) = agent.call{value: _agentFee}("");
         require(sent, "Failed to send token to agent");
         (sent, ) = protocolFeeDestination.call{value: _protocolFee}("");
         require(sent, "Failed to send token to team");
@@ -259,8 +300,8 @@ contract RiffianBoard is Initializable, OwnableUpgradeable, IRiffianBoard {
         return getPrice(_counter - 1, 1);
     }
 
-    function calculateAlbumVotePrice(address _album) public view returns (uint price) {
-        return getVotePrice(_album, 1);
+    function calculateSubjectVotePrice(bytes32 _subject) public view returns (uint price) {
+        return getVotePrice(_subject, 1);
     }
 
     function claimDailyRewards(uint _seq) public returns (uint) {
@@ -277,15 +318,15 @@ contract RiffianBoard is Initializable, OwnableUpgradeable, IRiffianBoard {
         return reward;
     }
 
-    function claimAlbumRewards(address _album) external returns (uint) {
-        _updateAlbumRewards(msg.sender, _album);
-        uint reward = userAlbumRewardsEarned[_album][msg.sender];
+    function claimSubjectRewards(bytes32 _subject) external returns (uint) {
+        _updateSubjectRewards(msg.sender, _subject);
+        uint reward = userSubjectRewardsEarned[_subject][msg.sender];
         if (reward > 0) {
-            userAlbumRewardsEarned[_album][msg.sender] = 0;
+            userSubjectRewardsEarned[_subject][msg.sender] = 0;
             (bool sent, ) = msg.sender.call{value: reward}("");
             require(sent, "Failed to send reward to user");
         }
-        emit ClaimAlbumRewards(msg.sender, _album, reward);
+        emit ClaimSubjectRewards(msg.sender, _subject, reward);
         return reward;
     }
 }
