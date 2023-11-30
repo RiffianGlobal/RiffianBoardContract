@@ -15,15 +15,16 @@ contract RiffianBoard is Initializable, OwnableUpgradeable, IRiffianBoard {
     using EnumerableSetUpgradeable for EnumerableSetUpgradeable.Bytes32Set;
     // constants
     uint private constant MULTIPLIER = 1e18;
+    uint constant interval = 1 weeks; // the seconds of a reward period
 
     // PARAMS
-    uint public rewardIntervalMin;
     uint public protocolFeePercents; // to protocol pool
     uint public subjectFeePercents; // to subject creator
     uint public agentFeePercents; // to agent of artist
     uint public boardFeePercents; // to board reward pool
 
     address public protocolFeeDestination;
+
     mapping(bytes32 => SubjectData) public subjectToData; // subject => votes number
     bytes32[] public subjectsList;
 
@@ -32,18 +33,11 @@ contract RiffianBoard is Initializable, OwnableUpgradeable, IRiffianBoard {
 
     // daily rewards related
     uint public startTimeStamp; // the start timestamp of the periodic reward
-    uint constant interval = 1 weeks; // the seconds of a reward period
-
-    mapping(uint => RewardData) public seqToRewardData; // seq => reward data
-
-    // subject rewards related
-    mapping(bytes32 => uint) public subjectRewardsIndex; // pool address => pool reward index
-    mapping(bytes32 => uint) public subjectRewardsBalance; // pool address => pool reward tokens
-    mapping(bytes32 => mapping(address => uint)) public userSubjectRewardsEarned; // subject => user => earn
-    mapping(bytes32 => mapping(address => uint)) public userSubjectRewardIndex; // subject => user => index
 
     mapping(uint256 => uint256) public weeklyVotes; // week => votes
     mapping(address => mapping(uint256 => uint256)) public userWeeklyVotes; // user => week => votes
+    mapping(uint256 => uint256) public weeklyReward; // week => reward
+    mapping(uint256 => mapping(address => uint256)) public weeklyRewardClaimed; // week => user => reward
 
     mapping(bytes32 => mapping(address => uint)) public userSubjectVotes; // subject => user => votes
 
@@ -57,8 +51,7 @@ contract RiffianBoard is Initializable, OwnableUpgradeable, IRiffianBoard {
     event NewSubject(address owner, bytes32 subject, string name, string image, string uri);
     event NewVote(address from, address to, uint amount, uint dailyRewardAmount, uint subjectPoolRewardAmount, uint teamRewardAmount, uint artistRewardAmount, uint seq);
     event EventVote(address voter, bytes32 subject, bool isVote, uint256 amount, uint256 value, uint256 supply);
-    event ClaimSubjectRewards(address account, bytes32 subject, uint reward);
-    event ClaimDailyRewards(address account, uint reward);
+    event EventClaimReward(address account, uint week, uint reward);
     // An event that someone binds a social account on `platform` with id `id` and a verification `uri` that should contain `account` in content.
     event EventBind(address account, string platform, string id, string uri);
 
@@ -68,7 +61,6 @@ contract RiffianBoard is Initializable, OwnableUpgradeable, IRiffianBoard {
         protocolFeeDestination = address(_feeDestination);
         startTimeStamp = _startTimeStamp;
 
-        rewardIntervalMin = 60 * 60 * 24;
         protocolFeePercents = 2; // 2%
         subjectFeePercents = 2; // 2%
         agentFeePercents = 2; // 2%
@@ -127,13 +119,11 @@ contract RiffianBoard is Initializable, OwnableUpgradeable, IRiffianBoard {
         }
     }
 
-    function newSubject(string memory _name, string memory _image, string memory _uri) external {
+    function newSubject(string memory _name, string memory _image, string memory _uri) external returns (bytes32) {
         require(socialPlatformHash[msg.sender].length() != 0, "Bind at least one social account to continue");
         // TrackNFT subject = new TrackNFT(_name, _symbol);
         bytes32 subject = keccak256(abi.encodePacked(msg.sender, _name));
         subjectsList.push(subject);
-        subjectRewardsIndex[subject] = 0;
-        subjectRewardsBalance[subject] = 0;
         SubjectData storage data = subjectToData[subject];
         data.artist = msg.sender;
         data.name = _name;
@@ -141,6 +131,7 @@ contract RiffianBoard is Initializable, OwnableUpgradeable, IRiffianBoard {
         data.uri = _uri;
         // console.log("new subject address", address(subject));
         emit NewSubject(msg.sender, subject, _name, _image, _uri);
+        return subject;
     }
 
     function vote(bytes32 _subject, uint256 _amount) public payable {
@@ -234,74 +225,23 @@ contract RiffianBoard is Initializable, OwnableUpgradeable, IRiffianBoard {
         _sum = _price + _protocolFee + _subjectFee + _agentFee + _boardFee;
     }
 
-    function calculateDailyRewards(address _account) public view returns (uint) {
-        // RewardData memory reward = seqToRewardData[currentSeqNumber];
-        uint votes = seqToRewardData[getWeek()].userVotes[_account];
-        // console.log("calculate daily rewards", votes, dailyRewardIndex , userDailyRewardIndex[_account]);
-        return (votes * (seqToRewardData[getWeek()].rewardIndex - seqToRewardData[getWeek()].userIndex[_account]));
-    }
-
-    function _updateDailyRewards(address _account, uint _seq) private {
-        RewardData storage reward = seqToRewardData[_seq];
-        reward.userEarned[_account] += calculateDailyRewards(_account);
-        reward.userIndex[_account] = reward.rewardIndex;
-        reward.userVotes[_account] += 1;
-    }
-
-    function _updateDailyRewardsIndex(uint _amount, uint _seq) private {
-        RewardData storage reward = seqToRewardData[_seq];
-        if (reward.votes > 0) {
-            // console.log("updateDailyRewardIndex",dailyRewardIndex,  _amount, dailyRewardVotes);
-            reward.rewardIndex += (_amount) / reward.votes;
-        }
-        reward.votes += 1;
-    }
-
-    function calculateSubjectRewards(address _account, bytes32 _subject) public view returns (uint) {
-        uint votes = userSubjectVotes[_subject][_account];
-        return (votes * (subjectRewardsIndex[_subject] - userSubjectRewardIndex[_subject][_account]));
-    }
-
-    function _updateSubjectRewards(address _account, bytes32 _subject) private {
-        userSubjectRewardsEarned[_subject][_account] += calculateSubjectRewards(_account, _subject);
-        userSubjectRewardIndex[_subject][_account] = subjectRewardsIndex[_subject];
-        userSubjectVotes[_subject][_account] += 1;
-    }
-
-    function _updateSubjectRewardsIndex(uint _amount, bytes32 _subject) private {
-        if (subjectRewardsBalance[_subject] > 0) {
-            subjectRewardsIndex[_subject] += (_amount * MULTIPLIER) / subjectRewardsBalance[_subject];
-        }
-        subjectRewardsBalance[_subject] += 1;
-    }
-
     function getWeek() public view returns (uint256) {
         return block.timestamp - ((block.timestamp - startTimeStamp) % interval);
     }
 
     function _distributeFees(bytes32 _subject, uint256 _protocolFee, uint256 _subjectFee, uint256 _agentFee, uint256 _boardFee) internal {
-        // update daily rewards
-        _updateDailyRewards(msg.sender, getWeek());
-        _updateDailyRewardsIndex(_boardFee, getWeek());
-
-        // // update subject rewards
-        // _updateSubjectRewards(msg.sender, _subject);
-        // _updateSubjectRewardsIndex(_boardFee, _subject);
-
-        // distribute to others
-        // console.log("send amount", _amount);
-        // console.log("send to artist", subjectToData[_subject].artist, artistRewardAmount);
-        // console.log("send to team", teamRewardAmount);
-        // console.log("send to daily pool", dailyRewardAmount);
-        // console.log("send to subject pool", subjectPoolRewardAmount);
-
+        // update board weekly reward
+        weeklyReward[getWeek()] = weeklyReward[getWeek()] + _boardFee;
+        // send to artist
         address artist = subjectToData[_subject].artist;
         (bool sent, ) = artist.call{value: _subjectFee}("");
         require(sent, "Failed to send token to artist");
+        // send to agent or artist
         address agent = agentAddress[artist];
         if (agent == address(0)) agent = artist;
         (sent, ) = agent.call{value: _agentFee}("");
         require(sent, "Failed to send token to agent");
+        // send to protocol
         (sent, ) = protocolFeeDestination.call{value: _protocolFee}("");
         require(sent, "Failed to send token to protocol");
     }
@@ -314,29 +254,16 @@ contract RiffianBoard is Initializable, OwnableUpgradeable, IRiffianBoard {
         return getVotePrice(_subject, 1);
     }
 
-    function claimDailyRewards(uint _seq) public returns (uint) {
-        _updateDailyRewards(msg.sender, _seq);
-        RewardData storage rewardData = seqToRewardData[_seq];
-        uint reward = rewardData.userEarned[msg.sender];
-        // console.log("claim daily reward", reward);
-        if (reward > 0) {
-            rewardData.userEarned[msg.sender] = 0;
+    function claimReward(uint256 _week) public returns (uint) {
+        require(_week < getWeek(), "Week not past");
+        require(userWeeklyVotes[msg.sender][_week] > 0, "No votes in that week");
+        uint256 reward = (weeklyReward[_week] * userWeeklyVotes[msg.sender][_week]) / weeklyVotes[_week];
+        if (weeklyRewardClaimed[_week][msg.sender] == 0) {
+            weeklyRewardClaimed[_week][msg.sender] = reward;
             (bool sent, ) = msg.sender.call{value: reward}("");
             require(sent, "Failed to send reward to user");
         }
-        emit ClaimDailyRewards(msg.sender, reward);
-        return reward;
-    }
-
-    function claimSubjectRewards(bytes32 _subject) external returns (uint) {
-        _updateSubjectRewards(msg.sender, _subject);
-        uint reward = userSubjectRewardsEarned[_subject][msg.sender];
-        if (reward > 0) {
-            userSubjectRewardsEarned[_subject][msg.sender] = 0;
-            (bool sent, ) = msg.sender.call{value: reward}("");
-            require(sent, "Failed to send reward to user");
-        }
-        emit ClaimSubjectRewards(msg.sender, _subject, reward);
+        emit EventClaimReward(msg.sender, _week, reward);
         return reward;
     }
 }

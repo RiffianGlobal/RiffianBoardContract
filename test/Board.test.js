@@ -21,10 +21,12 @@ describe('Board', function () {
 
     const teamAddress = owner.address;
     const Board = await hre.ethers.getContractFactory('RiffianBoard');
-    const startTime =
-      Math.floor((await time.latest()) / time.duration.weeks(1)) *
-        time.duration.weeks(1) -
-      time.duration.days(4); // four days before last Thur.
+    const startTime = await time.latest().then((nowTime) => {
+      // four days before last Thur.
+      return (
+        nowTime - (nowTime % time.duration.weeks(1)) - time.duration.days(4)
+      );
+    });
     const board = await upgrades.deployProxy(Board, [teamAddress, startTime]);
     await board.waitForDeployment();
     const proxy = await ethers.getContractAt(
@@ -77,7 +79,7 @@ describe('Board', function () {
         );
       });
     });
-    it('weekly vote', async function () {
+    it('weekly vote and retreat', async function () {
       const { proxy, subjectAddr } = await loadFixture(deployBoardFixture);
 
       await expect(vote(2, bob, subjectAddr, proxy));
@@ -146,7 +148,7 @@ describe('Board', function () {
     });
   });
 
-  describe('Bind social', async function () {
+  describe('bind social', async function () {
     it('bind and unbind', async function () {
       const { proxy, subjectAddress } = await loadFixture(deployBoardFixture);
 
@@ -169,7 +171,7 @@ describe('Board', function () {
     });
   });
 
-  describe('Vote', async function () {
+  describe('vote', async function () {
     it('create an subject', async function () {
       const { proxy, subjectAddress } = await loadFixture(deployBoardFixture);
 
@@ -189,13 +191,10 @@ describe('Board', function () {
       await expect(vote(1, bob, subjectAddr, proxy))
         .to.emit(proxy, 'EventVote')
         .withArgs(bob.address, subjectAddr, true, 1, anyValue, 1);
-      const {
-        artist,
-        rewardIndex: subjectRewardIndex,
-        votes: subjectVotes,
-      } = await proxy.subjectToData(subjectAddr);
+      const { artist, votes: subjectVotes } = await proxy.subjectToData(
+        subjectAddr,
+      );
       expect(artist).to.equals(alice.address);
-      expect(subjectRewardIndex).to.equals(0);
       expect(subjectVotes).to.equals(1);
       // check artist fee
       expect(await trackerAlice.delta()).to.equals(
@@ -212,22 +211,13 @@ describe('Board', function () {
         calcVotePrice(1).mul(new BN('104')).div(new BN('100')),
       );
 
-      const { starts, interval, rewardIndex, votes } =
-        await proxy.seqToRewardData(0);
-      // console.log('rewarddata', starts, interval, rewardIndex, votes);
-      expect(await proxy.calculateDailyRewards(bob.address)).to.equals(0);
-      expect(rewardIndex).to.equals(0);
-      // expect(votes).to.equals(1);
-
       // second vote
       await expect(vote(1, cindy, subjectAddr, proxy))
         .to.emit(proxy, 'EventVote')
         .withArgs(cindy.address, subjectAddr, true, 1, anyValue, 2);
-      const {
-        artist2,
-        rewardIndex: subjectRewardIndex2,
-        votes: subjectVotes2,
-      } = await proxy.subjectToData(subjectAddr);
+      const { artist2, votes: subjectVotes2 } = await proxy.subjectToData(
+        subjectAddr,
+      );
       expect(subjectVotes2).to.equals(2);
       expect(await trackerAlice.delta()).to.equals(
         calcVotePrice(2).mul(new BN('4')).div(new BN('100')),
@@ -269,8 +259,6 @@ describe('Board', function () {
         price.mul(new BN('104')).div(new BN('100')),
       );
 
-      const { rewardIndex2, votes2 } = await proxy.seqToRewardData(0);
-
       // retreat
       // first retreat
       await expect(retreat(1, bob, subjectAddr, proxy))
@@ -278,17 +266,10 @@ describe('Board', function () {
         .withArgs(bob.address, subjectAddr, false, 1, anyValue, 4);
       await proxy
         .subjectToData(subjectAddr)
-        .then(
-          ({
-            artist,
-            rewardIndex: subjectRewardIndex,
-            votes: subjectVotes,
-          }) => {
-            expect(artist).to.equals(alice.address);
-            expect(subjectRewardIndex).to.equals(0);
-            expect(subjectVotes).to.equals(4);
-          },
-        );
+        .then(({ artist, votes: subjectVotes }) => {
+          expect(artist).to.equals(alice.address);
+          expect(subjectVotes).to.equals(4);
+        });
       // check artist balance
       expect(await trackerAlice.delta()).to.equals(new BN(0));
       // check voter balance
@@ -309,17 +290,10 @@ describe('Board', function () {
         .withArgs(cindy.address, subjectAddr, false, 3, anyValue, 1);
       await proxy
         .subjectToData(subjectAddr)
-        .then(
-          ({
-            artist,
-            rewardIndex: subjectRewardIndex,
-            votes: subjectVotes,
-          }) => {
-            expect(artist).to.equals(alice.address);
-            expect(subjectRewardIndex).to.equals(0);
-            expect(subjectVotes).to.equals(1);
-          },
-        );
+        .then(({ artist, votes: subjectVotes }) => {
+          expect(artist).to.equals(alice.address);
+          expect(subjectVotes).to.equals(1);
+        });
       // check artist balance
       expect(await trackerAlice.delta()).to.equals(new BN(0));
       // check voter balance
@@ -331,42 +305,78 @@ describe('Board', function () {
       expect(await trackerContract.delta()).to.equals(price.neg());
     });
 
-    it.skip('claim daily reward', async function () {
-      const { proxy } = await loadFixture(deployBoardFixture);
-
-      expect(await proxy.connect(alice).newSubject('name', 'sym'))
-        .to.emit(proxy, 'NewSubject')
-        .withArgs(anyValue);
-      const newSubject = await proxy.subjectsList(0);
-
-      const votePrice = calcVotePrice(1);
-      await proxy.connect(bob).vote(newSubject, {
-        value: votePrice,
+    it('claim reward', async function () {
+      const { proxy, subjectAddr } = await loadFixture(deployBoardFixture);
+      // check reward after vote
+      await vote(1, bob, subjectAddr, proxy);
+      var week = await proxy.getWeek();
+      expect(await proxy.weeklyReward(week)).to.equals(
+        calcVotePrice(1).mul(new BN(4)).div(new BN(100)),
+      );
+      // should not be claimable
+      await expect(proxy.connect(bob).claimReward(week)).to.be.revertedWith(
+        'Week not past',
+      );
+      // should be claimable next week
+      await time.increase(time.duration.weeks(1));
+      const trackerBob = await balance.tracker(bob.address);
+      await expect(proxy.connect(bob).claimReward(week))
+        .to.emit(proxy, 'EventClaimReward')
+        .withArgs(bob.address, week, anyValue);
+      await trackerBob.deltaWithFees().then(({ delta, fees }) => {
+        expect(delta.add(fees)).to.equals(
+          calcVotePrice(1).mul(new BN(4)).div(new BN(100)),
+        );
       });
-      expect(await proxy.userDailyRewardIndex(bob.address)).to.equals(0);
-      expect(await proxy.userDailyEarned(bob.address)).to.equals(0);
-      expect(await proxy.userDailyBalance(bob.address)).to.equals(1);
-      expect(await proxy.dailyRewardIndex()).to.equals(0);
-      expect(await proxy.dailyRewardVotes()).to.equals(0);
 
-      const votePrice2 = calcVotePrice(2);
-      await proxy.connect(cindy).vote(newSubject, {
-        value: votePrice2, //ethers.parseEther(votePrice.toString()),
-      });
-      console.log('bob index', await proxy.userDailyRewardIndex(bob.address));
-      console.log('bob earned', await proxy.userDailyEarned(bob.address));
-      console.log('bob balance', await proxy.userDailyBalance(bob.address));
-      console.log('daily index', await proxy.dailyRewardIndex());
-      console.log('daily reward votes', await proxy.dailyRewardVotes());
-      console.log(
-        'bob daily reward',
-        await proxy.calculateDailyRewards(bob.address),
+      // retreat after vote
+      await vote(1, bob, subjectAddr, proxy);
+      await retreat(1, bob, subjectAddr, proxy);
+      var week = await proxy.getWeek();
+      expect(await proxy.weeklyReward(week)).to.equals(
+        calcVotePrice(2).mul(new BN(4)).div(new BN(100)),
+      );
+      // should not be claimable
+      await expect(proxy.connect(bob).claimReward(week)).to.be.revertedWith(
+        'Week not past',
+      );
+      // should not be claimable next week
+      await time.increase(time.duration.weeks(1));
+      // should not be claimable
+      await expect(proxy.connect(bob).claimReward(week)).to.be.revertedWith(
+        'No votes in that week',
       );
 
-      console.log(await proxy.userDailyEarned(cindy.address));
-      console.log(await proxy.userDailyBalance(alice.address));
-      console.log(await proxy.userDailyBalance(cindy.address));
+      // retreat after vote
+      await vote(1, bob, subjectAddr, proxy);
+      await vote(1, alice, subjectAddr, proxy);
+      await retreat(1, alice, subjectAddr, proxy);
+      var week = await proxy.getWeek();
+      expect(await proxy.weeklyReward(week)).to.equals(
+        calcVotePrice(2).add(calcVotePrice(3)).mul(new BN(4)).div(new BN(100)),
+      );
+      // should not be claimable
+      await expect(proxy.connect(bob).claimReward(week)).to.be.revertedWith(
+        'Week not past',
+      );
+      // next week
+      await time.increase(time.duration.weeks(1));
+      // should not be claimable for alice
+      await expect(proxy.connect(alice).claimReward(week)).to.be.revertedWith(
+        'No votes in that week',
+      );
+      await trackerBob.get();
+      await expect(proxy.connect(bob).claimReward(week))
+        .to.emit(proxy, 'EventClaimReward')
+        .withArgs(bob.address, week, anyValue);
+      await trackerBob.deltaWithFees().then(({ delta, fees }) => {
+        expect(delta.add(fees)).to.equals(
+          calcVotePrice(2)
+            .add(calcVotePrice(3))
+            .mul(new BN(4))
+            .div(new BN(100)),
+        );
+      });
     });
-    it('claim subject reward', async function () {});
   });
 });

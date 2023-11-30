@@ -9,7 +9,8 @@ interface IRiffianBoard {
 
     function unbindSocial(string calldata _platform) external;
 
-    function newSubject(string memory _name, string memory _image, string memory _uri) external;
+    // create a subject for voting
+    function newSubject(string memory _name, string memory _image, string memory _uri) external returns (bytes32);
 
     function vote(bytes32 _subject, uint256 _amount) external payable;
 
@@ -29,39 +30,19 @@ interface IRiffianBoard {
     // Get week start time
     function getWeek() external view returns (uint256);
 
-    function calculateDailyRewards(address _account) external view returns (uint);
-
-    function calculateSubjectRewards(address _account, bytes32 _subject) external view returns (uint);
-
-    //function claimDailyRewards() external returns (uint);
-    function claimSubjectRewards(bytes32 _subject) external returns (uint);
+    function claimReward(uint256 week) external returns (uint);
 }
 
 struct SubjectData {
     address artist;
-    // pool reward data
-    uint rewardIndex;
-    uint votes;
-    mapping(address => uint) userEarned;
-    mapping(address => uint) userIndex;
-    mapping(address => uint) userVotes;
     string name;
     string image;
     string uri;
+    uint votes;
 }
 
 struct SocialData {
     string platform;
     string id;
     string uri;
-}
-
-struct RewardData {
-    uint starts;
-    uint interval;
-    uint rewardIndex;
-    uint votes;
-    mapping(address => uint) userEarned;
-    mapping(address => uint) userIndex;
-    mapping(address => uint) userVotes;
 }
