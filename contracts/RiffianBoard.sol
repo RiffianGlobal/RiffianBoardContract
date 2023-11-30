@@ -17,12 +17,12 @@ contract RiffianBoard is Initializable, OwnableUpgradeable, IRiffianBoard {
 
     // PARAMS
     uint public rewardIntervalMin;
-    uint public teamRewardPercents; // to team address every vote
-    uint public artistRewardPercents; // to artist for every vote
-    uint public dailyRewardPercents; // 50% of vote
-    uint public albumPoolRewardPercents; // 40% of vote
+    uint public protocolFeePercents; // to protocol pool
+    uint public subjectFeePercents; // to subject creator
+    uint public agentFeePercents; // to agent of artist
+    uint public boardFeePercents; // to board reward pool
 
-    address public teamAddress;
+    address public protocolFeeDestination;
     mapping(address => AlbumData) public albumToData; // album => votes number
     address[] public albumsList;
 
@@ -50,37 +50,37 @@ contract RiffianBoard is Initializable, OwnableUpgradeable, IRiffianBoard {
     event ClaimAlbumRewards(address account, address album, uint reward);
     event ClaimDailyRewards(address account, uint reward);
 
-    function initialize(address _team, uint _startTimeStamp, uint _interval) public initializer {
+    function initialize(address _feeDestination, uint _startTimeStamp, uint _interval) public initializer {
         __Ownable_init();
 
-        teamAddress = address(_team);
+        protocolFeeDestination = address(_feeDestination);
         startTimeStamp = _startTimeStamp;
         interval = _interval;
 
         rewardIntervalMin = 60 * 60 * 24;
-        teamRewardPercents = 5; // 5%
-        artistRewardPercents = 5; // 5%
-        dailyRewardPercents = 50; // 50% of vote
-        albumPoolRewardPercents = 40; // 40% of vote
+        protocolFeePercents = 2; // 2%
+        subjectFeePercents = 2; // 2%
+        agentFeePercents = 2; // 2%
+        boardFeePercents = 4; // 4%
     }
 
-    function setRewardDistribution(uint _team, uint _artist, uint _daily, uint _album) external onlyOwner {
-        require(_team > 0 && _team < 100);
-        require(_artist > 0 && _artist < 100);
-        require(_daily > 0 && _daily < 100);
-        require(_album > 0 && _album < 100);
+    function setRewardDistribution(uint _protocol, uint _subject, uint _agent, uint _board) external onlyOwner {
+        require(_protocol > 0 && _protocol < 10);
+        require(_subject > 0 && _subject < 10);
+        require(_agent > 0 && _agent < 10);
+        require(_board > 0 && _board < 10);
 
-        teamRewardPercents = _team;
-        artistRewardPercents = _artist;
-        dailyRewardPercents = _daily;
-        albumPoolRewardPercents = _album;
+        protocolFeePercents = _protocol;
+        subjectFeePercents = _subject;
+        agentFeePercents = _agent;
+        boardFeePercents = _board;
 
-        emit NewRewardDistribution(teamRewardPercents, artistRewardPercents, dailyRewardPercents, albumPoolRewardPercents);
+        emit NewRewardDistribution(protocolFeePercents, subjectFeePercents, agentFeePercents, boardFeePercents);
     }
 
-    function setTeamAddress(address _team) external onlyOwner {
-        require(_team != address(0), "invalid team address");
-        teamAddress = _team;
+    function setFeeDestination(address _feeDestination) external onlyOwner {
+        require(_feeDestination != address(0), "invalid team address");
+        protocolFeeDestination = _feeDestination;
     }
 
     function setInterval(uint _interval) external onlyOwner {
@@ -114,7 +114,7 @@ contract RiffianBoard is Initializable, OwnableUpgradeable, IRiffianBoard {
 
     function vote(address _album, uint256 _amount) public payable {
         // check insufficient payment
-        (uint256 value, uint256 price, uint256 protocolFee, uint256 subjectFee) = getVotePriceWithFee(_album, _amount);
+        (uint256 value, uint256 price, uint256 protocolFee, uint256 subjectFee, uint256 agentFee, uint256 boardFee) = getVotePriceWithFee(_album, _amount);
         require(msg.value >= value, "Insufficient payment");
 
         // increase user votes
@@ -124,9 +124,11 @@ contract RiffianBoard is Initializable, OwnableUpgradeable, IRiffianBoard {
         // increate album votes
         albumToData[_album].votes += _amount;
 
-        emit EventVote(msg.sender, _album, true, _amount, price, albumToData[_album].votes);
+        uint256 _votes = albumToData[_album].votes;
+        emit EventVote(msg.sender, _album, true, _amount, price, _votes);
 
-        // @todo distrubte fees
+        // distrubte fees
+        _distributeFees(_album, protocolFee, subjectFee, agentFee, boardFee);
 
         // refund
         uint refund = msg.value - value;
@@ -170,11 +172,13 @@ contract RiffianBoard is Initializable, OwnableUpgradeable, IRiffianBoard {
         return getPrice(albumToData[_album].votes - _amount, _amount);
     }
 
-    function getVotePriceWithFee(address _album, uint256 _amount) public view returns (uint256 _sum, uint256 _price, uint256 _protocolFee, uint256 _subjectFee) {
+    function getVotePriceWithFee(address _album, uint256 _amount) public view returns (uint256 _sum, uint256 _price, uint256 _protocolFee, uint256 _subjectFee, uint256 _agentFee, uint256 _boardFee) {
         _price = getVotePrice(_album, _amount);
-        _protocolFee = (_price * teamRewardPercents) / 100;
-        _subjectFee = (_price * artistRewardPercents) / 100;
-        _sum = _price + _protocolFee + _subjectFee;
+        _protocolFee = (_price * protocolFeePercents) / 100;
+        _subjectFee = (_price * subjectFeePercents) / 100;
+        _agentFee = (_price * agentFeePercents) / 100;
+        _boardFee = (_price * boardFeePercents) / 100;
+        _sum = _price + _protocolFee + _subjectFee + _agentFee + _boardFee;
     }
 
     function calculateDailyRewards(address _account) public view returns (uint) {
@@ -218,13 +222,7 @@ contract RiffianBoard is Initializable, OwnableUpgradeable, IRiffianBoard {
         albumRewardsBalance[_album] += 1;
     }
 
-    function _distributeAmount(uint _amount, address _album) internal returns (uint, uint, uint, uint) {
-        (, uint amount_one_percent) = SafeMath.tryDiv(_amount, 100);
-        (, uint dailyRewardAmount) = SafeMath.tryMul(amount_one_percent, teamRewardPercents);
-        (, uint albumPoolRewardAmount) = SafeMath.tryMul(amount_one_percent, albumPoolRewardPercents);
-        (, uint teamRewardAmount) = SafeMath.tryMul(amount_one_percent, teamRewardPercents);
-        (, uint artistRewardAmount) = SafeMath.tryMul(amount_one_percent, artistRewardPercents);
-
+    function _distributeFees(address _album, uint256 _protocolFee, uint256 _subjectFee, uint256 _agentFee, uint256 _boardFee) internal {
         //
         uint seq = (block.timestamp - startTimeStamp) / interval;
         require(seq >= currentSeqNumber, "invalid current seq number");
@@ -236,11 +234,11 @@ contract RiffianBoard is Initializable, OwnableUpgradeable, IRiffianBoard {
 
         // update daily rewards
         _updateDailyRewards(msg.sender, currentSeqNumber);
-        _updateDailyRewardsIndex(dailyRewardAmount, currentSeqNumber);
+        _updateDailyRewardsIndex(_boardFee, currentSeqNumber);
 
-        // update album rewards
-        _updateAlbumRewards(msg.sender, _album);
-        _updateAlbumRewardsIndex(albumPoolRewardAmount, _album);
+        // // update album rewards
+        // _updateAlbumRewards(msg.sender, _album);
+        // _updateAlbumRewardsIndex(_boardFee, _album);
 
         // distribute to others
         // console.log("send amount", _amount);
@@ -249,11 +247,13 @@ contract RiffianBoard is Initializable, OwnableUpgradeable, IRiffianBoard {
         // console.log("send to daily pool", dailyRewardAmount);
         // console.log("send to album pool", albumPoolRewardAmount);
 
-        (bool sent, ) = albumToData[_album].artist.call{value: artistRewardAmount}("");
+        (bool sent, ) = albumToData[_album].artist.call{value: _subjectFee}("");
         require(sent, "Failed to send token to artist");
-        (sent, ) = teamAddress.call{value: teamRewardAmount}("");
+        // @todo send to agent instead of artist if exists
+        (sent, ) = albumToData[_album].artist.call{value: _agentFee}("");
+        require(sent, "Failed to send token to agent");
+        (sent, ) = protocolFeeDestination.call{value: _protocolFee}("");
         require(sent, "Failed to send token to team");
-        return (dailyRewardAmount, albumPoolRewardAmount, teamRewardAmount, artistRewardAmount);
     }
 
     function calculateVotePrice(uint _counter) public pure returns (uint price) {

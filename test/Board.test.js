@@ -2,7 +2,7 @@ const {
   time,
   loadFixture,
 } = require('@nomicfoundation/hardhat-network-helpers');
-const { ether, expectEvent } = require('@openzeppelin/test-helpers');
+const { BN, ether, balance } = require('@openzeppelin/test-helpers');
 const { anyValue } = require('@nomicfoundation/hardhat-chai-matchers/withArgs');
 
 let owner, alice, bob, cindy;
@@ -71,6 +71,10 @@ describe('Board', function () {
     it('vote an album', async function () {
       const { proxy, albumAddr } = await loadFixture(deployBoardFixture);
 
+      const trackerAlice = await balance.tracker(alice.address);
+      const trackerBob = await balance.tracker(bob.address);
+      const trackerCindy = await balance.tracker(cindy.address);
+      const trackerContract = await balance.tracker(await proxy.getAddress());
       // first vote
       await expect(vote(1, 1, bob, albumAddr, proxy))
         .to.emit(proxy, 'EventVote')
@@ -83,6 +87,21 @@ describe('Board', function () {
       expect(artist).to.equals(alice.address);
       expect(albumRewardIndex).to.equals(0);
       expect(albumVotes).to.equals(1);
+      // check artist fee
+      expect(await trackerAlice.delta()).to.equals(
+        calcVotePrice(1).mul(new BN('4')).div(new BN('100')),
+      );
+      // check vote fee
+      await trackerBob.deltaWithFees().then(({ delta, fees }) => {
+        expect(delta.neg().sub(fees)).to.within(
+          calcVotePrice(1),
+          calcVotePrice(1).mul(new BN('11')).div(new BN('10')),
+        );
+      });
+      // check protocol fee
+      expect(await trackerContract.delta()).to.equals(
+        calcVotePrice(1).mul(new BN('104')).div(new BN('100')),
+      );
 
       const { starts, interval, rewardIndex, votes } =
         await proxy.seqToRewardData(0);
@@ -101,6 +120,18 @@ describe('Board', function () {
         votes: albumVotes2,
       } = await proxy.albumToData(albumAddr);
       expect(albumVotes2).to.equals(2);
+      expect(await trackerAlice.delta()).to.equals(
+        calcVotePrice(2).mul(new BN('4')).div(new BN('100')),
+      );
+      await trackerCindy.deltaWithFees().then(({ delta, fees }) => {
+        expect(delta.neg().sub(fees)).to.within(
+          calcVotePrice(2),
+          calcVotePrice(2).mul(new BN('11')).div(new BN('10')),
+        );
+      });
+      expect(await trackerContract.delta()).to.equals(
+        calcVotePrice(2).mul(new BN('104')).div(new BN('100')),
+      );
 
       const { rewardIndex2, votes2 } = await proxy.seqToRewardData(0);
 

@@ -9,7 +9,7 @@ interface IRiffianBoard {
     function getPrice(uint256 _supply, uint256 _amount) external pure returns (uint256);
     function getVotePrice(address _album, uint256 _amount) external view returns (uint256);
     function getRetreatPrice(address _album, uint256 _amount) external view returns (uint256);
-    function getVotePriceWithFee(address _album, uint256 _amount) external view returns (uint256 _sum, uint256 _price, uint256 _protocolFee, uint256 _subjectFee);
+    function getVotePriceWithFee(address _album, uint256 _amount) external view returns (uint256 _sum, uint256 _price, uint256 _protocolFee, uint256 _subjectFee, uint256 _agentFee, uint256 _boardFee);
     function calculateDailyRewards(address _account) external view returns (uint) ;
     function calculateAlbumRewards(address _account, address _album) external view returns (uint) ;
     //function claimDailyRewards() external returns (uint);
