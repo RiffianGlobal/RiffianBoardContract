@@ -147,10 +147,9 @@ contract RiffianBoard is Initializable, OwnableUpgradeable, IRiffianBoard {
         userAlbumVotes[_album][msg.sender] = newAmount;
 
         // decreate album votes
-        albumToData[_album].votes -= _amount;
+        albumToData[_album].votes = supply - _amount;
 
-        uint256 price = getRetreatPrice(_album, _amount);
-
+        uint256 price = getPrice(supply - _amount, _amount);
         emit EventVote(msg.sender, _album, false, _amount, price, albumToData[_album].votes);
 
         (bool success, ) = msg.sender.call{value: price}("");

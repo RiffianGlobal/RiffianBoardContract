@@ -42,12 +42,17 @@ describe('Board', function () {
   function calcVotePrice(x) {
     return ether((x / 10).toString());
   }
-  function vote(start, times, from, albumAddr, proxy) {
+
+  function vote(times, from, albumAddr, proxy) {
     return proxy.getVotePriceWithFee(albumAddr, times).then((votePrice) => {
-      return proxy.connect(from)['vote(address)'](albumAddr, {
+      return proxy.connect(from)['vote(address,uint256)'](albumAddr, times, {
         value: votePrice._sum,
       });
     });
+  }
+
+  function retreat(times, from, albumAddr, proxy) {
+    return proxy.connect(from).retreat(albumAddr, times);
   }
 
   describe('check vote price', async function () {
@@ -68,7 +73,7 @@ describe('Board', function () {
         .withArgs(anyValue);
     });
 
-    it('vote an album', async function () {
+    it('vote an album and retreat', async function () {
       const { proxy, albumAddr } = await loadFixture(deployBoardFixture);
 
       const trackerAlice = await balance.tracker(alice.address);
@@ -76,7 +81,7 @@ describe('Board', function () {
       const trackerCindy = await balance.tracker(cindy.address);
       const trackerContract = await balance.tracker(await proxy.getAddress());
       // first vote
-      await expect(vote(1, 1, bob, albumAddr, proxy))
+      await expect(vote(1, bob, albumAddr, proxy))
         .to.emit(proxy, 'EventVote')
         .withArgs(bob.address, albumAddr, true, 1, anyValue, 1);
       const {
@@ -93,8 +98,7 @@ describe('Board', function () {
       );
       // check vote fee
       await trackerBob.deltaWithFees().then(({ delta, fees }) => {
-        expect(delta.neg().sub(fees)).to.within(
-          calcVotePrice(1),
+        expect(delta.neg().sub(fees)).to.equals(
           calcVotePrice(1).mul(new BN('11')).div(new BN('10')),
         );
       });
@@ -111,7 +115,7 @@ describe('Board', function () {
       // expect(votes).to.equals(1);
 
       // second vote
-      await expect(vote(2, 1, cindy, albumAddr, proxy))
+      await expect(vote(1, cindy, albumAddr, proxy))
         .to.emit(proxy, 'EventVote')
         .withArgs(cindy.address, albumAddr, true, 1, anyValue, 2);
       const {
@@ -124,8 +128,7 @@ describe('Board', function () {
         calcVotePrice(2).mul(new BN('4')).div(new BN('100')),
       );
       await trackerCindy.deltaWithFees().then(({ delta, fees }) => {
-        expect(delta.neg().sub(fees)).to.within(
-          calcVotePrice(2),
+        expect(delta.neg().sub(fees)).to.equals(
           calcVotePrice(2).mul(new BN('11')).div(new BN('10')),
         );
       });
@@ -133,12 +136,82 @@ describe('Board', function () {
         calcVotePrice(2).mul(new BN('104')).div(new BN('100')),
       );
 
+      // multiple vote
+      await expect(vote(3, cindy, albumAddr, proxy))
+        .to.emit(proxy, 'EventVote')
+        .withArgs(cindy.address, albumAddr, true, 3, anyValue, 5);
+      await proxy
+        .albumToData(albumAddr)
+        .then(
+          ({ artist2, rewardIndex: albumRewardIndex2, votes: albumVotes2 }) => {
+            expect(albumVotes2).to.equals(5);
+          },
+        );
+      var price = calcVotePrice(3).add(calcVotePrice(4)).add(calcVotePrice(5));
+      expect(await trackerAlice.delta()).to.equals(
+        price.mul(new BN('4')).div(new BN('100')),
+      );
+      await trackerCindy.deltaWithFees().then(({ delta, fees }) => {
+        expect(delta.neg().sub(fees)).to.equals(
+          price.mul(new BN('11')).div(new BN('10')),
+        );
+      });
+      expect(await trackerContract.delta()).to.equals(
+        price.mul(new BN('104')).div(new BN('100')),
+      );
+
       const { rewardIndex2, votes2 } = await proxy.seqToRewardData(0);
 
-      // const bobReward2 = (calcVotePrice(1) + calcVotePrice(2)) / 2;
-      // expect(await proxy.calculateDailyRewards(bob.address)).to.equals(
-      //   bobReward2,
-      // );
+      // retreat
+      // first retreat
+      await expect(retreat(1, bob, albumAddr, proxy))
+        .to.emit(proxy, 'EventVote')
+        .withArgs(bob.address, albumAddr, false, 1, anyValue, 4);
+      await proxy
+        .albumToData(albumAddr)
+        .then(
+          ({ artist, rewardIndex: albumRewardIndex, votes: albumVotes }) => {
+            expect(artist).to.equals(alice.address);
+            expect(albumRewardIndex).to.equals(0);
+            expect(albumVotes).to.equals(4);
+          },
+        );
+      // check artist balance
+      expect(await trackerAlice.delta()).to.equals(new BN(0));
+      // check voter balance
+      await trackerBob.deltaWithFees().then(({ delta, fees }) => {
+        expect(delta.add(fees)).to.equals(calcVotePrice(5));
+      });
+      // check protocol balance
+      expect(await trackerContract.delta()).to.equals(calcVotePrice(5).neg());
+
+      // retreat without holding
+      await expect(retreat(1, bob, albumAddr, proxy)).to.be.revertedWith(
+        'Insufficient votes',
+      );
+
+      // multiple retreat
+      await expect(retreat(3, cindy, albumAddr, proxy))
+        .to.emit(proxy, 'EventVote')
+        .withArgs(cindy.address, albumAddr, false, 3, anyValue, 1);
+      await proxy
+        .albumToData(albumAddr)
+        .then(
+          ({ artist, rewardIndex: albumRewardIndex, votes: albumVotes }) => {
+            expect(artist).to.equals(alice.address);
+            expect(albumRewardIndex).to.equals(0);
+            expect(albumVotes).to.equals(1);
+          },
+        );
+      // check artist balance
+      expect(await trackerAlice.delta()).to.equals(new BN(0));
+      // check voter balance
+      var price = calcVotePrice(4).add(calcVotePrice(3)).add(calcVotePrice(2));
+      await trackerCindy.deltaWithFees().then(({ delta, fees }) => {
+        expect(delta.add(fees)).to.equals(price);
+      });
+      // check protocol balance
+      expect(await trackerContract.delta()).to.equals(price.neg());
     });
 
     it.skip('claim daily reward', async function () {
