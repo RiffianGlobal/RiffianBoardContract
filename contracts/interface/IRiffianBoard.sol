@@ -26,6 +26,9 @@ interface IRiffianBoard {
         uint256 _amount
     ) external view returns (uint256 _sum, uint256 _price, uint256 _protocolFee, uint256 _subjectFee, uint256 _agentFee, uint256 _boardFee);
 
+    // Get week start time
+    function getWeek() external view returns (uint256);
+
     function calculateDailyRewards(address _account) external view returns (uint);
 
     function calculateSubjectRewards(address _account, bytes32 _subject) external view returns (uint);

@@ -66,7 +66,7 @@ describe('Board', function () {
   describe('get week', async function () {
     it('get week', async function () {
       const { proxy } = await loadFixture(deployBoardFixture);
-      await proxy._getWeek().then((timestamp) => {
+      await proxy.getWeek().then((timestamp) => {
         var now = new Date();
         var newDate = new Date();
         newDate.setTime(Number(timestamp) * 1000);
@@ -81,67 +81,67 @@ describe('Board', function () {
       const { proxy, subjectAddr } = await loadFixture(deployBoardFixture);
 
       await expect(vote(2, bob, subjectAddr, proxy));
-      expect(await proxy.weeklyVotes(await proxy._getWeek())).to.equals(2);
+      expect(await proxy.weeklyVotes(await proxy.getWeek())).to.equals(2);
       expect(
-        await proxy.userWeeklyVotes(bob.address, await proxy._getWeek()),
+        await proxy.userWeeklyVotes(bob.address, await proxy.getWeek()),
       ).to.equals(2);
 
       await expect(retreat(1, bob, subjectAddr, proxy));
-      expect(await proxy.weeklyVotes(await proxy._getWeek())).to.equals(1);
+      expect(await proxy.weeklyVotes(await proxy.getWeek())).to.equals(1);
       expect(
-        await proxy.userWeeklyVotes(bob.address, await proxy._getWeek()),
+        await proxy.userWeeklyVotes(bob.address, await proxy.getWeek()),
       ).to.equals(1);
 
       await expect(retreat(1, bob, subjectAddr, proxy));
-      expect(await proxy.weeklyVotes(await proxy._getWeek())).to.equals(0);
+      expect(await proxy.weeklyVotes(await proxy.getWeek())).to.equals(0);
       expect(
-        await proxy.userWeeklyVotes(bob.address, await proxy._getWeek()),
+        await proxy.userWeeklyVotes(bob.address, await proxy.getWeek()),
       ).to.equals(0);
 
       await expect(vote(1, alice, subjectAddr, proxy));
-      expect(await proxy.weeklyVotes(await proxy._getWeek())).to.equals(1);
+      expect(await proxy.weeklyVotes(await proxy.getWeek())).to.equals(1);
       expect(
-        await proxy.userWeeklyVotes(alice.address, await proxy._getWeek()),
+        await proxy.userWeeklyVotes(alice.address, await proxy.getWeek()),
       ).to.equals(1);
 
       await expect(vote(2, bob, subjectAddr, proxy));
-      expect(await proxy.weeklyVotes(await proxy._getWeek())).to.equals(3);
+      expect(await proxy.weeklyVotes(await proxy.getWeek())).to.equals(3);
       expect(
-        await proxy.userWeeklyVotes(bob.address, await proxy._getWeek()),
+        await proxy.userWeeklyVotes(bob.address, await proxy.getWeek()),
       ).to.equals(2);
 
       await expect(retreat(1, alice, subjectAddr, proxy));
-      expect(await proxy.weeklyVotes(await proxy._getWeek())).to.equals(2);
+      expect(await proxy.weeklyVotes(await proxy.getWeek())).to.equals(2);
       expect(
-        await proxy.userWeeklyVotes(alice.address, await proxy._getWeek()),
+        await proxy.userWeeklyVotes(alice.address, await proxy.getWeek()),
       ).to.equals(0);
 
       // next week
       await time.increase(time.duration.weeks(1));
-      expect(await proxy.weeklyVotes(await proxy._getWeek())).to.equals(0);
+      expect(await proxy.weeklyVotes(await proxy.getWeek())).to.equals(0);
       expect(
-        await proxy.userWeeklyVotes(bob.address, await proxy._getWeek()),
+        await proxy.userWeeklyVotes(bob.address, await proxy.getWeek()),
       ).to.equals(0);
       expect(
-        await proxy.userWeeklyVotes(alice.address, await proxy._getWeek()),
+        await proxy.userWeeklyVotes(alice.address, await proxy.getWeek()),
       ).to.equals(0);
 
       await expect(retreat(1, bob, subjectAddr, proxy));
-      expect(await proxy.weeklyVotes(await proxy._getWeek())).to.equals(0);
+      expect(await proxy.weeklyVotes(await proxy.getWeek())).to.equals(0);
       expect(
-        await proxy.userWeeklyVotes(bob.address, await proxy._getWeek()),
+        await proxy.userWeeklyVotes(bob.address, await proxy.getWeek()),
       ).to.equals(0);
 
       await expect(vote(1, bob, subjectAddr, proxy));
-      expect(await proxy.weeklyVotes(await proxy._getWeek())).to.equals(1);
+      expect(await proxy.weeklyVotes(await proxy.getWeek())).to.equals(1);
       expect(
-        await proxy.userWeeklyVotes(bob.address, await proxy._getWeek()),
+        await proxy.userWeeklyVotes(bob.address, await proxy.getWeek()),
       ).to.equals(1);
 
       await expect(retreat(2, bob, subjectAddr, proxy));
-      expect(await proxy.weeklyVotes(await proxy._getWeek())).to.equals(0);
+      expect(await proxy.weeklyVotes(await proxy.getWeek())).to.equals(0);
       expect(
-        await proxy.userWeeklyVotes(bob.address, await proxy._getWeek()),
+        await proxy.userWeeklyVotes(bob.address, await proxy.getWeek()),
       ).to.equals(0);
     });
   });

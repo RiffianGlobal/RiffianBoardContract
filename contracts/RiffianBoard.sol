@@ -153,7 +153,7 @@ contract RiffianBoard is Initializable, OwnableUpgradeable, IRiffianBoard {
         userSubjectVotes[_subject][msg.sender] = oldAmount + _amount;
 
         // increate weekly votes
-        uint256 week = _getWeek();
+        uint256 week = getWeek();
         oldAmount = weeklyVotes[week];
         weeklyVotes[week] = oldAmount + _amount;
         oldAmount = userWeeklyVotes[msg.sender][week];
@@ -185,7 +185,7 @@ contract RiffianBoard is Initializable, OwnableUpgradeable, IRiffianBoard {
         userSubjectVotes[_subject][msg.sender] = newAmount;
 
         // decreate weekly votes
-        uint256 week = _getWeek();
+        uint256 week = getWeek();
         uint256 oldAmount = userWeeklyVotes[msg.sender][week];
         if (oldAmount > 0) {
             uint256 amountToDecrease = _amount;
@@ -236,9 +236,9 @@ contract RiffianBoard is Initializable, OwnableUpgradeable, IRiffianBoard {
 
     function calculateDailyRewards(address _account) public view returns (uint) {
         // RewardData memory reward = seqToRewardData[currentSeqNumber];
-        uint votes = seqToRewardData[_getWeek()].userVotes[_account];
+        uint votes = seqToRewardData[getWeek()].userVotes[_account];
         // console.log("calculate daily rewards", votes, dailyRewardIndex , userDailyRewardIndex[_account]);
-        return (votes * (seqToRewardData[_getWeek()].rewardIndex - seqToRewardData[_getWeek()].userIndex[_account]));
+        return (votes * (seqToRewardData[getWeek()].rewardIndex - seqToRewardData[getWeek()].userIndex[_account]));
     }
 
     function _updateDailyRewards(address _account, uint _seq) private {
@@ -275,14 +275,14 @@ contract RiffianBoard is Initializable, OwnableUpgradeable, IRiffianBoard {
         subjectRewardsBalance[_subject] += 1;
     }
 
-    function _getWeek() public view returns (uint256) {
+    function getWeek() public view returns (uint256) {
         return block.timestamp - ((block.timestamp - startTimeStamp) % interval);
     }
 
     function _distributeFees(bytes32 _subject, uint256 _protocolFee, uint256 _subjectFee, uint256 _agentFee, uint256 _boardFee) internal {
         // update daily rewards
-        _updateDailyRewards(msg.sender, _getWeek());
-        _updateDailyRewardsIndex(_boardFee, _getWeek());
+        _updateDailyRewards(msg.sender, getWeek());
+        _updateDailyRewardsIndex(_boardFee, getWeek());
 
         // // update subject rewards
         // _updateSubjectRewards(msg.sender, _subject);
@@ -303,7 +303,7 @@ contract RiffianBoard is Initializable, OwnableUpgradeable, IRiffianBoard {
         (sent, ) = agent.call{value: _agentFee}("");
         require(sent, "Failed to send token to agent");
         (sent, ) = protocolFeeDestination.call{value: _protocolFee}("");
-        require(sent, "Failed to send token to team");
+        require(sent, "Failed to send token to protocol");
     }
 
     function calculateVotePrice(uint _counter) public pure returns (uint price) {
