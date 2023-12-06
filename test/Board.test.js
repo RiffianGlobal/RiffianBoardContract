@@ -69,6 +69,10 @@ describe('Board', function () {
     it('get week', async function () {
       const { proxy } = await loadFixture(deployBoardFixture);
       await proxy.getWeek().then((timestamp) => {
+        const interval = 24 * 60 * 60 * 1000;
+        var weekBegin = new Date();
+        weekBegin -= weekBegin.getUTCDay() * interval;
+        expect(timestamp).to.equals(BigInt(weekBegin / 1000));
         var now = new Date();
         var newDate = new Date();
         newDate.setTime(Number(timestamp) * 1000);
