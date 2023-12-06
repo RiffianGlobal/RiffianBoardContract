@@ -68,11 +68,20 @@ describe('Board', function () {
   describe('get week', async function () {
     it('get week', async function () {
       const { proxy } = await loadFixture(deployBoardFixture);
+      await proxy.startTimeStamp().then((timestamp) => {
+        var date = new Date(Number(timestamp * 1000n));
+        expect(date.getUTCDay()).to.equals(0);
+        expect(date.getUTCHours()).to.equals(0);
+        expect(date.getUTCMinutes()).to.equals(0);
+        expect(date.getUTCSeconds()).to.equals(0);
+        expect(date.getUTCMilliseconds()).to.equals(0);
+      });
       await proxy.getWeek().then((timestamp) => {
         const interval = 24 * 60 * 60 * 1000;
         var weekBegin = new Date();
+        weekBegin.setUTCHours(0, 0, 0, 0);
         weekBegin -= weekBegin.getUTCDay() * interval;
-        expect(timestamp).to.equals(BigInt(weekBegin / 1000));
+        expect(timestamp).to.equals(BigInt(weekBegin) / 1000n);
         var now = new Date();
         var newDate = new Date();
         newDate.setTime(Number(timestamp) * 1000);
