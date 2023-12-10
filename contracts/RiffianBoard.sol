@@ -46,6 +46,8 @@ contract RiffianBoard is Initializable, OwnableUpgradeable, IRiffianBoard {
 
     mapping(address => address) public agentAddress; // artist => agent
 
+    mapping(address => mapping(bytes32 => mapping(uint256 => uint256))) public userSubjectWeeklyVotes; // user => subject => week => votes
+
     // EVENTS
     event NewRewardDistribution(uint _team, uint _artist, uint _daily, uint _subject);
     event NewSubject(address owner, bytes32 subject, string name, string image, string uri);
@@ -149,6 +151,8 @@ contract RiffianBoard is Initializable, OwnableUpgradeable, IRiffianBoard {
         weeklyVotes[week] = oldAmount + _amount;
         oldAmount = userWeeklyVotes[msg.sender][week];
         userWeeklyVotes[msg.sender][week] = oldAmount + _amount;
+        oldAmount = userSubjectWeeklyVotes[msg.sender][_subject][week];
+        userSubjectWeeklyVotes[msg.sender][_subject][week] = oldAmount + _amount;
 
         // increate subject votes
         subjectToData[_subject].votes += _amount;
@@ -177,15 +181,15 @@ contract RiffianBoard is Initializable, OwnableUpgradeable, IRiffianBoard {
 
         // decreate weekly votes
         uint256 week = getWeek();
-        uint256 oldAmount = userWeeklyVotes[msg.sender][week];
+        uint256 oldAmount = userSubjectWeeklyVotes[msg.sender][_subject][week];
         if (oldAmount > 0) {
             uint256 amountToDecrease = _amount;
             if (oldAmount < _amount) {
                 amountToDecrease = oldAmount;
             }
-            userWeeklyVotes[msg.sender][week] = oldAmount - amountToDecrease;
-            oldAmount = weeklyVotes[week];
-            weeklyVotes[week] = oldAmount - amountToDecrease;
+            userSubjectWeeklyVotes[msg.sender][_subject][week] = oldAmount - amountToDecrease;
+            userWeeklyVotes[msg.sender][week] = userWeeklyVotes[msg.sender][week] - amountToDecrease;
+            weeklyVotes[week] = weeklyVotes[week] - amountToDecrease;
         }
 
         // decreate subject votes

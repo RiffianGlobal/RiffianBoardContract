@@ -390,6 +390,29 @@ describe('Board', function () {
             .div(new BN(100)),
         );
       });
+
+      // retreat another subject
+      await proxy.connect(alice).newSubject('another_name', 'uri', 'image');
+      const subjectAddrAnother = await proxy.subjectsList(1);
+      await vote(1, bob, subjectAddr, proxy);
+      await vote(1, bob, subjectAddrAnother, proxy);
+      // next week
+      await time.increase(time.duration.weeks(1));
+      // vote and retreat another subject
+      await vote(1, bob, subjectAddrAnother, proxy);
+      await retreat(1, bob, subjectAddr, proxy);
+      week = await proxy.getWeek();
+      // next week
+      await time.increase(time.duration.weeks(1));
+      await trackerBob.get();
+      await expect(proxy.connect(bob).claimReward(week))
+        .to.emit(proxy, 'EventClaimReward')
+        .withArgs(bob.address, week, anyValue);
+      await trackerBob.deltaWithFees().then(({ delta, fees }) => {
+        expect(delta.add(fees)).to.equals(
+          calcVotePrice(2).mul(new BN(4)).div(new BN(100)),
+        );
+      });
     });
   });
 });
