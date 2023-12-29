@@ -49,6 +49,19 @@ module.exports = {
       accounts: accounts(),
     },
   },
+  etherscan: {
+    apiKey: process.env.ETHERSCAN_API_KEY ?? 'no_key',
+    customChains: [
+      {
+        network: 'rifftestnet',
+        chainId: 0xdddd,
+        urls: {
+          apiURL: 'https://scout.testnet.doid.tech/api',
+          browserURL: 'https://scan.testnet.doid.tech',
+        },
+      },
+    ],
+  },
   solidity: {
     compilers: [
       {
