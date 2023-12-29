@@ -13,8 +13,8 @@ async function main() {
     teamAddress,
     startTimestamp,
   ]);
-  await proxy.deployed();
-  console.log('deploy proxy address @', proxy.address);
+  await proxy.waitForDeployment();
+  console.log('deploy proxy address @', await proxy.getAddress());
 }
 
 // We recommend this pattern to be able to use async/await everywhere
