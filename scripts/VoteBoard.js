@@ -5,29 +5,36 @@
 // will compile your contracts, add the Hardhat Runtime Environment's members to the
 // global scope, and execute the script.
 const hre = require('hardhat');
-const {parseEther}= require("ethers/lib/utils")
+// const { parseEther } = require('ethers/lib/utils');
 
 async function displayParameters(proxy) {
   // get parameters
   console.log('starttimestamp @', await proxy.startTimeStamp());
-  console.log('interval ', await proxy.interval());
-  console.log('teamRewardPercents', await proxy.teamRewardPercents());
+  console.log('teamRewardPercents', await proxy.protocolFeePercents());
+}
+
+async function bind(proxy) {
+  const tx = await proxy.bindSocial('x', '111', 'url.ph');
+  const receipt = await tx.wait();
+  console.log('bind social', receipt);
 }
 
 async function newAlbum(proxy) {
-  let tx = await proxy.newAlbum('test', 'test');
+  let tx = await proxy.newSubject('testname', 'image.jpg', 'url.placeholder');
   const receipt = await tx.wait();
-  receipt.events.forEach((element) => {
-    // console.log("album address:", element["event"][])
-    // if(element["event"] == "NewAlbum"){
-    // }
-  });
+  console.log(receipt.events);
+  // receipt.events.forEach((element) => {
+  // console.log('album address:', element);
+  // if(element["event"] == "NewAlbum"){
+  // }
+  // });
 }
 
-async function vote(proxy){
-  albumAddr = '0x1575600eddabe10c7a8cf59436b1654959d583f1';
-  tx = await proxy.vote(albumAddr, {
-    value: parseEther('0.1'),
+async function vote(proxy) {
+  albumAddr =
+    '0xF764A579C6861630ECE96BCEB2E575D116CCAF11DDC488BB1E7FE9CE7F33CB18';
+  tx = await proxy.vote(albumAddr, 1, {
+    value: ethers.parseEther('1'),
   });
   console.log(await tx.wait());
   return;
@@ -38,33 +45,33 @@ async function main() {
   const owner = accounts[0];
   console.log('owner ', owner.address);
 
-  const proxyAddr = '0x081D0aa8c44D72ED9F31234271cc6b40628A5879';
+  const proxyAddr = '0x5d0d729990c9b97ab1de2a65cf98901b1229f3cf';
   const proxy = await hre.ethers.getContractAt('RiffianBoard', proxyAddr);
 
   // await displayParameters(proxy);
-
+  // await bind(proxy);
   // await newAlbum(proxy);
 
-  await vote(proxy)
-return
+  await vote(proxy);
+  return;
 
   tx = await proxy.claimDailyRewards();
   console.log(await tx.wait());
 
   console.log(
     'daily user balance',
-    await proxy.userDailyBalance(owner.address)
+    await proxy.userDailyBalance(owner.address),
   );
   console.log(
     'daily user rewards',
-    await proxy.calculateDailyRewards(owner.address)
+    await proxy.calculateDailyRewards(owner.address),
   );
   console.log(
     'album rewards',
     await proxy.calculateAlbumRewards(
       owner.address,
-      '0x763e69d24a03c0c8b256e470d9fe9e0753504d07'
-    )
+      '0x763e69d24a03c0c8b256e470d9fe9e0753504d07',
+    ),
   );
 }
 

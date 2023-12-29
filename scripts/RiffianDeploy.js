@@ -12,7 +12,6 @@ async function main() {
   const proxy = await upgrades.deployProxy(Board, [
     teamAddress,
     startTimestamp,
-    dailyInterval,
   ]);
   await proxy.deployed();
   console.log('deploy proxy address @', proxy.address);
