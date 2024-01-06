@@ -12,7 +12,7 @@ const {
 const Contract = artifacts.require('RiffianAirdrop');
 const MockBoard = artifacts.require('AirdropVoted');
 const [RewardSocialVerify, RewardFollow, RewardShare, RewardVote] = [
-  ether('100'),
+  ether('40'),
   ether('10'),
   ether('10'),
   ether('100'),
@@ -76,7 +76,11 @@ contract('RiffianAirdrop', (accounts) => {
 
   beforeEach(async function () {
     this.mockVoted = await MockBoard.new();
-    this.contract = await Contract.new(alice, this.mockVoted.address);
+    const proxy = await upgrades.deployProxy(
+      await ethers.getContractFactory('RiffianAirdrop'),
+      [alice, this.mockVoted.address],
+    );
+    this.contract = await Contract.at(await proxy.getAddress());
     await send.ether(alice, this.contract.address, ether('350'));
     expect(await balance.current(this.contract.address)).to.equal(ether('350'));
     domain.verifyingContract = this.contract.address;
@@ -124,7 +128,7 @@ contract('RiffianAirdrop', (accounts) => {
     let signature = await getSignatureSocialVerify(bob);
     // signature should match
     await expectRevert(
-      this.contract.claimSocialVerify(signature, op, {
+      this.contract.claimSocialVerify(signature, {
         from: alice,
       }),
       'Invalid signature',
@@ -146,7 +150,7 @@ contract('RiffianAirdrop', (accounts) => {
     const tracker = await balance.tracker(bob);
     expect(await this.contract.isSocialVerifyClaimed(bob)).to.equal(false);
     expectEvent(
-      await this.contract.claimSocialVerify(signature, op, {
+      await this.contract.claimSocialVerify(signature, {
         from: bob,
       }),
       'EventClaimSocial',
@@ -160,29 +164,19 @@ contract('RiffianAirdrop', (accounts) => {
 
     // should not claim again
     await expectRevert(
-      this.contract.claimSocialVerify(signature, op, {
+      this.contract.claimSocialVerify(signature, {
         from: bob,
       }),
       'Already claimed',
     );
     await expectRevert(
-      this.contract.claimSocialVerify(
-        await getSignatureSocialVerify(alice),
-        op,
-        {
-          from: bob,
-        },
-      ),
-      'Already claimed',
-    );
-    await expectRevert(
-      this.contract.claimSocialVerify(signature, bob, {
-        from: op,
+      this.contract.claimSocialVerify(await getSignatureSocialVerify(alice), {
+        from: bob,
       }),
       'Already claimed',
     );
     await expectRevert(
-      this.contract.claimSocialVerify(signature, op, {
+      this.contract.claimSocialVerify(signature, {
         from: alice,
       }),
       'Invalid signature',
@@ -195,7 +189,7 @@ contract('RiffianAirdrop', (accounts) => {
 
     // signature should match
     await expectRevert(
-      this.contract.claimSocialVerify(signature, op, {
+      this.contract.claimSocialVerify(signature, {
         from: bob,
       }),
       'Invalid signature',
@@ -307,7 +301,7 @@ contract('RiffianAirdrop', (accounts) => {
 
     // signature should match
     await expectRevert(
-      this.contract.claimSocialVerify(signature, op, {
+      this.contract.claimSocialVerify(signature, {
         from: bob,
       }),
       'Invalid signature',
@@ -457,7 +451,7 @@ contract('RiffianAirdrop', (accounts) => {
     await expect(this.contract.setPause(true)).not.to.be.reverted;
     expect(await this.contract.paused()).to.equal(true);
     await expectRevert(
-      this.contract.claimSocialVerify(await getSignatureSocialVerify(bob), op, {
+      this.contract.claimSocialVerify(await getSignatureSocialVerify(bob), {
         from: bob,
       }),
       'Contract paused',

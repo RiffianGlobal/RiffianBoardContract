@@ -6,7 +6,7 @@ async function main() {
   console.log('owner ', owner.address);
 
   const teamAddress = owner.address;
-  const startTimestamp = 1700709480;
+  const startTimestamp = 1703980800n;
   const dailyInterval = 24 * 60 * 60;
   const Board = await ethers.getContractFactory('RiffianBoard');
   const proxy = await upgrades.deployProxy(Board, [
