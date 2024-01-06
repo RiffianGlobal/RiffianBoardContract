@@ -140,6 +140,7 @@ contract RiffianBoard is Initializable, OwnableUpgradeable, IRiffianBoard {
         // check insufficient payment
         (uint256 value, uint256 price, uint256 protocolFee, uint256 subjectFee, uint256 agentFee, uint256 boardFee) = getVotePriceWithFee(_subject, _amount);
         require(msg.value >= value, "Insufficient payment");
+        require(subjectToData[_subject].artist != address(0), "Subject does not exists.");
 
         // increase user votes
         uint256 oldAmount = userSubjectVotes[_subject][msg.sender];

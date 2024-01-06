@@ -1,13 +1,18 @@
 const {
+  reset,
   time,
   loadFixture,
 } = require('@nomicfoundation/hardhat-network-helpers');
-const { BN, ether, balance } = require('@openzeppelin/test-helpers');
+const { BN, ether, balance, constants } = require('@openzeppelin/test-helpers');
 const { anyValue } = require('@nomicfoundation/hardhat-chai-matchers/withArgs');
 
 let owner, alice, bob, cindy;
 
 describe('Board', function () {
+  before(async function () {
+    await reset();
+  });
+
   // We define a fixture to reuse the same setup in every test.
   // We use loadFixture to run this setup once, snapshot that state,
   // and reset Hardhat Network to that snapshot in every test.
@@ -191,6 +196,13 @@ describe('Board', function () {
       expect(await proxy.connect(alice).newSubject('name', 'uri', 'image'))
         .to.emit(proxy, 'NewSubject')
         .withArgs(anyValue);
+    });
+
+    it('can not vote a unknown subject', async function () {
+      const { proxy, subjectAddr } = await loadFixture(deployBoardFixture);
+      await expect(
+        vote(1, bob, constants.ZERO_BYTES32, proxy),
+      ).to.be.revertedWith('Subject does not exists.');
     });
 
     it('vote an subject and retreat', async function () {
