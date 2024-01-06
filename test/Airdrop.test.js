@@ -35,7 +35,7 @@ const typesShare = {
 };
 
 contract('RiffianAirdrop', (accounts) => {
-  const [deployer, alice, bob] = accounts;
+  const [deployer, alice, bob, op] = accounts;
 
   let domain = {
     name: 'RiffianAirdrop', // should be same to eip712 contract constructor.
@@ -124,7 +124,7 @@ contract('RiffianAirdrop', (accounts) => {
     let signature = await getSignatureSocialVerify(bob);
     // signature should match
     await expectRevert(
-      this.contract.claimSocialVerify(signature, {
+      this.contract.claimSocialVerify(signature, op, {
         from: alice,
       }),
       'Invalid signature',
@@ -146,7 +146,7 @@ contract('RiffianAirdrop', (accounts) => {
     const tracker = await balance.tracker(bob);
     expect(await this.contract.isSocialVerifyClaimed(bob)).to.equal(false);
     expectEvent(
-      await this.contract.claimSocialVerify(signature, {
+      await this.contract.claimSocialVerify(signature, op, {
         from: bob,
       }),
       'EventClaimSocial',
@@ -160,19 +160,29 @@ contract('RiffianAirdrop', (accounts) => {
 
     // should not claim again
     await expectRevert(
-      this.contract.claimSocialVerify(signature, {
+      this.contract.claimSocialVerify(signature, op, {
         from: bob,
       }),
       'Already claimed',
     );
     await expectRevert(
-      this.contract.claimSocialVerify(await getSignatureSocialVerify(alice), {
-        from: bob,
+      this.contract.claimSocialVerify(
+        await getSignatureSocialVerify(alice),
+        op,
+        {
+          from: bob,
+        },
+      ),
+      'Already claimed',
+    );
+    await expectRevert(
+      this.contract.claimSocialVerify(signature, bob, {
+        from: op,
       }),
       'Already claimed',
     );
     await expectRevert(
-      this.contract.claimSocialVerify(signature, {
+      this.contract.claimSocialVerify(signature, op, {
         from: alice,
       }),
       'Invalid signature',
@@ -185,7 +195,7 @@ contract('RiffianAirdrop', (accounts) => {
 
     // signature should match
     await expectRevert(
-      this.contract.claimSocialVerify(signature, {
+      this.contract.claimSocialVerify(signature, op, {
         from: bob,
       }),
       'Invalid signature',
@@ -297,7 +307,7 @@ contract('RiffianAirdrop', (accounts) => {
 
     // signature should match
     await expectRevert(
-      this.contract.claimSocialVerify(signature, {
+      this.contract.claimSocialVerify(signature, op, {
         from: bob,
       }),
       'Invalid signature',
@@ -447,7 +457,7 @@ contract('RiffianAirdrop', (accounts) => {
     await expect(this.contract.setPause(true)).not.to.be.reverted;
     expect(await this.contract.paused()).to.equal(true);
     await expectRevert(
-      this.contract.claimSocialVerify(await getSignatureSocialVerify(bob), {
+      this.contract.claimSocialVerify(await getSignatureSocialVerify(bob), op, {
         from: bob,
       }),
       'Contract paused',
