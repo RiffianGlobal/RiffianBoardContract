@@ -53,6 +53,14 @@ module.exports = {
     apiKey: process.env.ETHERSCAN_API_KEY ?? 'no_key',
     customChains: [
       {
+        network: 'ftmtestnet',
+        chainId: 0xfa2,
+        urls: {
+          apiURL: 'https://api-testnet.ftmscan.com/api',
+          browserURL: 'https://testnet.ftmscan.com',
+        },
+      },
+      {
         network: 'rifftestnet',
         chainId: 0xdddd,
         urls: {

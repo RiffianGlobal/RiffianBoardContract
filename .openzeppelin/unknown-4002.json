@@ -1859,6 +1859,381 @@
         },
         "namespaces": {}
       }
+    },
+    "9a0a2ca18217bf587908d2b0463fb98cf28ae3fc710ddd09faf422a59b59caf5": {
+      "address": "0x5a8ea2A7Ae6Ca7686E815F9BFC83D04d8b5291eb",
+      "txHash": "0xff042898c039bf3b294a0610a9a8febe49e6aded4c5b0146fb2fb4a7f80925c9",
+      "layout": {
+        "solcVersion": "0.8.20",
+        "storage": [
+          {
+            "label": "_initialized",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_uint8",
+            "contract": "Initializable",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:63",
+            "retypedFrom": "bool"
+          },
+          {
+            "label": "_initializing",
+            "offset": 1,
+            "slot": "0",
+            "type": "t_bool",
+            "contract": "Initializable",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:68"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_array(t_uint256)50_storage",
+            "contract": "ContextUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol:36"
+          },
+          {
+            "label": "_owner",
+            "offset": 0,
+            "slot": "51",
+            "type": "t_address",
+            "contract": "OwnableUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol:22"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "52",
+            "type": "t_array(t_uint256)49_storage",
+            "contract": "OwnableUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol:94"
+          },
+          {
+            "label": "protocolFeePercents",
+            "offset": 0,
+            "slot": "101",
+            "type": "t_uint256",
+            "contract": "RiffianBoard",
+            "src": "contracts/RiffianBoard.sol:21"
+          },
+          {
+            "label": "subjectFeePercents",
+            "offset": 0,
+            "slot": "102",
+            "type": "t_uint256",
+            "contract": "RiffianBoard",
+            "src": "contracts/RiffianBoard.sol:22"
+          },
+          {
+            "label": "agentFeePercents",
+            "offset": 0,
+            "slot": "103",
+            "type": "t_uint256",
+            "contract": "RiffianBoard",
+            "src": "contracts/RiffianBoard.sol:23"
+          },
+          {
+            "label": "boardFeePercents",
+            "offset": 0,
+            "slot": "104",
+            "type": "t_uint256",
+            "contract": "RiffianBoard",
+            "src": "contracts/RiffianBoard.sol:24"
+          },
+          {
+            "label": "protocolFeeDestination",
+            "offset": 0,
+            "slot": "105",
+            "type": "t_address",
+            "contract": "RiffianBoard",
+            "src": "contracts/RiffianBoard.sol:26"
+          },
+          {
+            "label": "subjectToData",
+            "offset": 0,
+            "slot": "106",
+            "type": "t_mapping(t_bytes32,t_struct(SubjectData)3148_storage)",
+            "contract": "RiffianBoard",
+            "src": "contracts/RiffianBoard.sol:28"
+          },
+          {
+            "label": "subjectsList",
+            "offset": 0,
+            "slot": "107",
+            "type": "t_array(t_bytes32)dyn_storage",
+            "contract": "RiffianBoard",
+            "src": "contracts/RiffianBoard.sol:29"
+          },
+          {
+            "label": "guardian",
+            "offset": 0,
+            "slot": "108",
+            "type": "t_address",
+            "contract": "RiffianBoard",
+            "src": "contracts/RiffianBoard.sol:32"
+          },
+          {
+            "label": "startTimeStamp",
+            "offset": 0,
+            "slot": "109",
+            "type": "t_uint256",
+            "contract": "RiffianBoard",
+            "src": "contracts/RiffianBoard.sol:35"
+          },
+          {
+            "label": "weeklyVotes",
+            "offset": 0,
+            "slot": "110",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "contract": "RiffianBoard",
+            "src": "contracts/RiffianBoard.sol:37"
+          },
+          {
+            "label": "userWeeklyVotes",
+            "offset": 0,
+            "slot": "111",
+            "type": "t_mapping(t_address,t_mapping(t_uint256,t_uint256))",
+            "contract": "RiffianBoard",
+            "src": "contracts/RiffianBoard.sol:38"
+          },
+          {
+            "label": "weeklyReward",
+            "offset": 0,
+            "slot": "112",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "contract": "RiffianBoard",
+            "src": "contracts/RiffianBoard.sol:39"
+          },
+          {
+            "label": "weeklyRewardClaimed",
+            "offset": 0,
+            "slot": "113",
+            "type": "t_mapping(t_uint256,t_mapping(t_address,t_uint256))",
+            "contract": "RiffianBoard",
+            "src": "contracts/RiffianBoard.sol:40"
+          },
+          {
+            "label": "userSubjectVotes",
+            "offset": 0,
+            "slot": "114",
+            "type": "t_mapping(t_bytes32,t_mapping(t_address,t_uint256))",
+            "contract": "RiffianBoard",
+            "src": "contracts/RiffianBoard.sol:42"
+          },
+          {
+            "label": "socialPlatformHash",
+            "offset": 0,
+            "slot": "115",
+            "type": "t_mapping(t_address,t_struct(Bytes32Set)877_storage)",
+            "contract": "RiffianBoard",
+            "src": "contracts/RiffianBoard.sol:44"
+          },
+          {
+            "label": "socialPlatform",
+            "offset": 0,
+            "slot": "116",
+            "type": "t_mapping(t_address,t_mapping(t_bytes32,t_struct(SocialData)3155_storage))",
+            "contract": "RiffianBoard",
+            "src": "contracts/RiffianBoard.sol:45"
+          },
+          {
+            "label": "agentAddress",
+            "offset": 0,
+            "slot": "117",
+            "type": "t_mapping(t_address,t_address)",
+            "contract": "RiffianBoard",
+            "src": "contracts/RiffianBoard.sol:47"
+          },
+          {
+            "label": "userSubjectWeeklyVotes",
+            "offset": 0,
+            "slot": "118",
+            "type": "t_mapping(t_address,t_mapping(t_bytes32,t_mapping(t_uint256,t_uint256)))",
+            "contract": "RiffianBoard",
+            "src": "contracts/RiffianBoard.sol:49"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_array(t_bytes32)dyn_storage": {
+            "label": "bytes32[]",
+            "numberOfBytes": "32"
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]",
+            "numberOfBytes": "1568"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]",
+            "numberOfBytes": "1600"
+          },
+          "t_bool": {
+            "label": "bool",
+            "numberOfBytes": "1"
+          },
+          "t_bytes32": {
+            "label": "bytes32",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_address)": {
+            "label": "mapping(address => address)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_mapping(t_bytes32,t_mapping(t_uint256,t_uint256)))": {
+            "label": "mapping(address => mapping(bytes32 => mapping(uint256 => uint256)))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_mapping(t_bytes32,t_struct(SocialData)3155_storage))": {
+            "label": "mapping(address => mapping(bytes32 => struct SocialData))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_mapping(t_uint256,t_uint256))": {
+            "label": "mapping(address => mapping(uint256 => uint256))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_struct(Bytes32Set)877_storage)": {
+            "label": "mapping(address => struct EnumerableSetUpgradeable.Bytes32Set)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_uint256)": {
+            "label": "mapping(address => uint256)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_bytes32,t_mapping(t_address,t_uint256))": {
+            "label": "mapping(bytes32 => mapping(address => uint256))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_bytes32,t_mapping(t_uint256,t_uint256))": {
+            "label": "mapping(bytes32 => mapping(uint256 => uint256))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_bytes32,t_struct(SocialData)3155_storage)": {
+            "label": "mapping(bytes32 => struct SocialData)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_bytes32,t_struct(SubjectData)3148_storage)": {
+            "label": "mapping(bytes32 => struct SubjectData)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_bytes32,t_uint256)": {
+            "label": "mapping(bytes32 => uint256)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_mapping(t_address,t_uint256))": {
+            "label": "mapping(uint256 => mapping(address => uint256))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_uint256)": {
+            "label": "mapping(uint256 => uint256)",
+            "numberOfBytes": "32"
+          },
+          "t_string_storage": {
+            "label": "string",
+            "numberOfBytes": "32"
+          },
+          "t_struct(Bytes32Set)877_storage": {
+            "label": "struct EnumerableSetUpgradeable.Bytes32Set",
+            "members": [
+              {
+                "label": "_inner",
+                "type": "t_struct(Set)683_storage",
+                "offset": 0,
+                "slot": "0"
+              }
+            ],
+            "numberOfBytes": "64"
+          },
+          "t_struct(Set)683_storage": {
+            "label": "struct EnumerableSetUpgradeable.Set",
+            "members": [
+              {
+                "label": "_values",
+                "type": "t_array(t_bytes32)dyn_storage",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "_indexes",
+                "type": "t_mapping(t_bytes32,t_uint256)",
+                "offset": 0,
+                "slot": "1"
+              }
+            ],
+            "numberOfBytes": "64"
+          },
+          "t_struct(SocialData)3155_storage": {
+            "label": "struct SocialData",
+            "members": [
+              {
+                "label": "platform",
+                "type": "t_string_storage",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "id",
+                "type": "t_string_storage",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "uri",
+                "type": "t_string_storage",
+                "offset": 0,
+                "slot": "2"
+              }
+            ],
+            "numberOfBytes": "96"
+          },
+          "t_struct(SubjectData)3148_storage": {
+            "label": "struct SubjectData",
+            "members": [
+              {
+                "label": "artist",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "name",
+                "type": "t_string_storage",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "image",
+                "type": "t_string_storage",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "uri",
+                "type": "t_string_storage",
+                "offset": 0,
+                "slot": "3"
+              },
+              {
+                "label": "votes",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "4"
+              }
+            ],
+            "numberOfBytes": "160"
+          },
+          "t_uint256": {
+            "label": "uint256",
+            "numberOfBytes": "32"
+          },
+          "t_uint8": {
+            "label": "uint8",
+            "numberOfBytes": "1"
+          }
+        },
+        "namespaces": {}
+      }
     }
   }
 }
