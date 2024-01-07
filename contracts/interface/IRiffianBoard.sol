@@ -30,6 +30,9 @@ interface IRiffianBoard {
     // Get week start time
     function getWeek() external view returns (uint256);
 
+    // check if user has voted this week
+    function hasVoted(address account) external view returns (bool);
+
     function claimReward(uint256 week) external returns (uint);
 }
 

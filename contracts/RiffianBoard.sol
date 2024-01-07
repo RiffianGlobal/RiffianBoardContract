@@ -234,6 +234,10 @@ contract RiffianBoard is Initializable, OwnableUpgradeable, IRiffianBoard {
         return block.timestamp - ((block.timestamp - startTimeStamp) % interval);
     }
 
+    function hasVoted(address account) external view returns (bool) {
+        return userWeeklyVotes[account][getWeek()] > 0;
+    }
+
     function _distributeFees(bytes32 _subject, uint256 _protocolFee, uint256 _subjectFee, uint256 _agentFee, uint256 _boardFee) internal {
         // update board weekly reward
         weeklyReward[getWeek()] = weeklyReward[getWeek()] + _boardFee;
