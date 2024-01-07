@@ -8,6 +8,7 @@ import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import {IRiffianAirdrop} from "./interface/IAirdrop.sol";
+import {SocialData} from "./interface/IRiffianBoard.sol";
 
 struct ClaimState {
     uint256 time;
@@ -15,8 +16,10 @@ struct ClaimState {
     mapping(uint256 => bool) claimed;
 }
 
-interface IRiffianVoted {
+interface IRiffianCheck {
     function hasVoted(address account) external view returns (bool);
+
+    function getSocials(address _owner) external view returns (SocialData[] memory);
 }
 
 /**
@@ -64,7 +67,7 @@ contract RiffianAirdrop is EIP712Upgradeable, OwnableUpgradeable, IRiffianAirdro
     address public riffian_airdrop_signer;
 
     // The riffian board: used to check if voted.
-    IRiffianVoted public riffian_board;
+    IRiffianCheck public riffian_board;
 
     // Is social account verification reward claimed.
     mapping(address => bool) public isSocialVerifyClaimed;
@@ -78,7 +81,7 @@ contract RiffianAirdrop is EIP712Upgradeable, OwnableUpgradeable, IRiffianAirdro
     /* ============ Constructor ============ */
     function initialize(address _signer, address _board) external initializer {
         riffian_airdrop_signer = _signer;
-        riffian_board = IRiffianVoted(_board);
+        riffian_board = IRiffianCheck(_board);
         RewardSocialVerify = 40 ether;
         RewardFollow = 10 ether;
         MaxFollow = 5;
@@ -90,9 +93,17 @@ contract RiffianAirdrop is EIP712Upgradeable, OwnableUpgradeable, IRiffianAirdro
         __Ownable_init();
     }
 
+    /* ============ External View Functions ======= */
+    function claimable() external view returns (uint256 socialVerify, uint256 follow, uint256 share, uint256 vote) {
+        if (!isSocialVerifyClaimed[msg.sender] && riffian_board.getSocials(msg.sender).length > 0) socialVerify = RewardSocialVerify;
+
+        if (!isVotingClaimed[msg.sender] && riffian_board.hasVoted(msg.sender)) vote = RewardVote;
+    }
+
     /* ============ External Functions ============ */
     function claimSocialVerify(bytes calldata _signature) external override onlyNoPaused {
         require(!isSocialVerifyClaimed[msg.sender], "Already claimed");
+        require(riffian_board.getSocials(msg.sender).length > 0, "Not verified yet");
         // require(_verify(_hashAccount(msg.sender), _signature), "Invalid signature");
         isSocialVerifyClaimed[msg.sender] = true;
         (bool success, ) = msg.sender.call{value: RewardSocialVerify}(new bytes(0));
@@ -173,7 +184,7 @@ contract RiffianAirdrop is EIP712Upgradeable, OwnableUpgradeable, IRiffianAirdro
      */
     function updateRiffianBoard(address newAddress) external onlyOwner {
         require(newAddress != address(0), "Riffian board address must not be null address");
-        riffian_board = IRiffianVoted(newAddress);
+        riffian_board = IRiffianCheck(newAddress);
     }
 
     /* ============ Internal Functions ============ */
