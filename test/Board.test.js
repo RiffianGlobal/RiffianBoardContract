@@ -191,11 +191,36 @@ describe('Board', function () {
 
   describe('vote', async function () {
     it('create an subject', async function () {
-      const { proxy, subjectAddress } = await loadFixture(deployBoardFixture);
+      const { proxy, subjectAddr } = await loadFixture(deployBoardFixture);
 
-      expect(await proxy.connect(alice).newSubject('name', 'uri', 'image'))
+      await expect(
+        proxy.connect(alice).newSubject('name', 'uri', 'image'),
+      ).to.be.revertedWith('Already created');
+
+      await expect(
+        proxy
+          .connect(alice)
+          .modifySubject(constants.ZERO_BYTES32, 'uri', 'image'),
+      ).to.be.revertedWith('Subject does not exists');
+
+      await expect(proxy.connect(alice).newSubject('name1', 'uri', 'image'))
         .to.emit(proxy, 'NewSubject')
-        .withArgs(anyValue);
+        .withArgs(alice.address, anyValue, 'name1', 'uri', 'image');
+
+      await expect(
+        proxy.connect(alice).modifySubject(subjectAddr, 'uri1', 'image1'),
+      )
+        .to.emit(proxy, 'EventSubjectChange')
+        .withArgs(subjectAddr, 'uri1', 'image1');
+
+      // console.log(await proxy.subjectToData(subjectAddr));
+      expect(await proxy.subjectToData(subjectAddr)).to.deep.equals([
+        alice.address,
+        'name',
+        'uri1',
+        'image1',
+        '0',
+      ]);
     });
 
     it('can not vote a unknown subject', async function () {

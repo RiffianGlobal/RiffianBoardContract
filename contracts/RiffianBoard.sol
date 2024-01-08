@@ -51,6 +51,7 @@ contract RiffianBoard is Initializable, OwnableUpgradeable, IRiffianBoard {
     // EVENTS
     event NewRewardDistribution(uint _team, uint _artist, uint _daily, uint _subject);
     event NewSubject(address owner, bytes32 subject, string name, string image, string uri);
+    event EventSubjectChange(bytes32 subject, string image, string uri);
     event NewVote(address from, address to, uint amount, uint dailyRewardAmount, uint subjectPoolRewardAmount, uint teamRewardAmount, uint artistRewardAmount, uint seq);
     event EventVote(address voter, bytes32 subject, bool isVote, uint256 amount, uint256 value, uint256 supply);
     event EventClaimReward(address account, uint week, uint reward);
@@ -125,6 +126,7 @@ contract RiffianBoard is Initializable, OwnableUpgradeable, IRiffianBoard {
         require(socialPlatformHash[msg.sender].length() != 0, "Bind at least one social account to continue");
         // TrackNFT subject = new TrackNFT(_name, _symbol);
         bytes32 subject = keccak256(abi.encodePacked(msg.sender, _name));
+        require(subjectToData[subject].artist == address(0), "Already created");
         subjectsList.push(subject);
         SubjectData storage data = subjectToData[subject];
         data.artist = msg.sender;
@@ -134,6 +136,14 @@ contract RiffianBoard is Initializable, OwnableUpgradeable, IRiffianBoard {
         // console.log("new subject address", address(subject));
         emit NewSubject(msg.sender, subject, _name, _image, _uri);
         return subject;
+    }
+
+    function modifySubject(bytes32 subject, string memory _image, string memory _uri) external {
+        require(subjectToData[subject].artist != address(0), "Subject does not exists");
+        SubjectData storage data = subjectToData[subject];
+        data.image = _image;
+        data.uri = _uri;
+        emit EventSubjectChange(subject, _image, _uri);
     }
 
     function vote(bytes32 _subject, uint256 _amount) public payable {

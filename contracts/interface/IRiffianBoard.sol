@@ -12,6 +12,8 @@ interface IRiffianBoard {
     // create a subject for voting
     function newSubject(string memory _name, string memory _image, string memory _uri) external returns (bytes32);
 
+    function modifySubject(bytes32 subject, string memory _image, string memory _uri) external;
+
     function vote(bytes32 _subject, uint256 _amount) external payable;
 
     function retreat(bytes32 _subject, uint256 _amount) external;
