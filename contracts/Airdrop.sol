@@ -95,9 +95,24 @@ contract RiffianAirdrop is EIP712Upgradeable, OwnableUpgradeable, IRiffianAirdro
 
     /* ============ External View Functions ======= */
     function claimable() external view returns (uint256 socialVerify, uint256 follow, uint256 share, uint256 vote) {
-        if (!isSocialVerifyClaimed[msg.sender] && riffian_board.getSocials(msg.sender).length > 0) socialVerify = RewardSocialVerify;
+        if (!isSocialVerifyClaimed[msg.sender]) socialVerify = RewardSocialVerify;
 
-        if (!isVotingClaimed[msg.sender] && riffian_board.hasVoted(msg.sender)) vote = RewardVote;
+        uint256 timeInDays = block.timestamp / dayInSecs;
+        ClaimState storage claimStateFollow = followClaimed[msg.sender];
+        if (timeInDays > claimStateFollow.time) {
+            follow = RewardFollow * MaxFollow;
+        } else if (claimStateFollow.count < MaxFollow) {
+            follow = RewardFollow * (MaxFollow - claimStateFollow.count);
+        }
+
+        ClaimState storage claimStateShare = shareClaimed[msg.sender];
+        if (timeInDays > claimStateShare.time) {
+            share = RewardShare * MaxShare;
+        } else if (claimStateShare.count < MaxShare) {
+            share = RewardShare * (MaxShare - claimStateShare.count);
+        }
+
+        if (!isVotingClaimed[msg.sender]) vote = RewardVote;
     }
 
     /* ============ External Functions ============ */
