@@ -94,7 +94,7 @@ contract RiffianAirdrop is EIP712Upgradeable, OwnableUpgradeable, IRiffianAirdro
     }
 
     /* ============ External View Functions ======= */
-    function claimable() external view returns (uint256 socialVerify, uint256 follow, uint256 share, uint256 vote) {
+    function claimable() external view returns (uint256 socialVerify, uint256 vote, uint256 follow, uint256 share) {
         if (!isSocialVerifyClaimed[msg.sender]) socialVerify = RewardSocialVerify;
 
         uint256 timeInDays = block.timestamp / dayInSecs;
