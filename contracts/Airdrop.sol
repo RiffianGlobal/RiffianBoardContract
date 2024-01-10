@@ -94,25 +94,29 @@ contract RiffianAirdrop is EIP712Upgradeable, OwnableUpgradeable, IRiffianAirdro
     }
 
     /* ============ External View Functions ======= */
-    function claimable() external view returns (uint256 socialVerify, uint256 vote, uint256 follow, uint256 share) {
-        if (!isSocialVerifyClaimed[msg.sender]) socialVerify = RewardSocialVerify;
+    function claimable() external view returns (uint256 socialVerify, uint256 follow, uint256 share, uint256 vote) {
+        return claimable(msg.sender);
+    }
+
+    function claimable(address _account) public view returns (uint256 socialVerify, uint256 follow, uint256 share, uint256 vote) {
+        if (!isSocialVerifyClaimed[_account]) socialVerify = RewardSocialVerify;
 
         uint256 timeInDays = block.timestamp / dayInSecs;
-        ClaimState storage claimStateFollow = followClaimed[msg.sender];
+        ClaimState storage claimStateFollow = followClaimed[_account];
         if (timeInDays > claimStateFollow.time) {
             follow = RewardFollow * MaxFollow;
         } else if (claimStateFollow.count < MaxFollow) {
             follow = RewardFollow * (MaxFollow - claimStateFollow.count);
         }
 
-        ClaimState storage claimStateShare = shareClaimed[msg.sender];
+        ClaimState storage claimStateShare = shareClaimed[_account];
         if (timeInDays > claimStateShare.time) {
             share = RewardShare * MaxShare;
         } else if (claimStateShare.count < MaxShare) {
             share = RewardShare * (MaxShare - claimStateShare.count);
         }
 
-        if (!isVotingClaimed[msg.sender]) vote = RewardVote;
+        if (!isVotingClaimed[_account]) vote = RewardVote;
     }
 
     /* ============ External Functions ============ */
