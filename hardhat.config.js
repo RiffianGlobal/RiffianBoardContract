@@ -64,7 +64,7 @@ module.exports = {
         network: 'rifftestnet',
         chainId: 0xdddd,
         urls: {
-          apiURL: 'https://scout.testnet.doid.tech/api',
+          apiURL: 'https://scan.testnet.doid.tech/api',
           browserURL: 'https://scan.testnet.doid.tech',
         },
       },
