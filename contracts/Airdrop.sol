@@ -94,11 +94,11 @@ contract RiffianAirdrop is EIP712Upgradeable, OwnableUpgradeable, IRiffianAirdro
     }
 
     /* ============ External View Functions ======= */
-    function claimable() external view returns (uint256 socialVerify, uint256 follow, uint256 share, uint256 vote) {
+    function claimable() external view returns (uint256 socialVerify, uint256 vote, uint256 follow, uint256 share) {
         return claimable(msg.sender);
     }
 
-    function claimable(address _account) public view returns (uint256 socialVerify, uint256 follow, uint256 share, uint256 vote) {
+    function claimable(address _account) public view returns (uint256 socialVerify, uint256 vote, uint256 follow, uint256 share) {
         if (!isSocialVerifyClaimed[_account]) socialVerify = RewardSocialVerify;
 
         uint256 timeInDays = block.timestamp / dayInSecs;
@@ -123,7 +123,7 @@ contract RiffianAirdrop is EIP712Upgradeable, OwnableUpgradeable, IRiffianAirdro
     function claimSocialVerify(bytes calldata _signature) external override onlyNoPaused {
         require(!isSocialVerifyClaimed[msg.sender], "Already claimed");
         require(riffian_board.getSocials(msg.sender).length > 0, "Not verified yet");
-        // require(_verify(_hashAccount(msg.sender), _signature), "Invalid signature");
+        require(_verify(_hashAccount(msg.sender), _signature), "Invalid signature");
         isSocialVerifyClaimed[msg.sender] = true;
         (bool success, ) = msg.sender.call{value: RewardSocialVerify}(new bytes(0));
         require(success, "Claim failed");

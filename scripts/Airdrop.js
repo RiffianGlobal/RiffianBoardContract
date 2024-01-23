@@ -9,7 +9,10 @@ async function main() {
     'RiffianAirdrop',
     '0x8AD7E2eC2AF30F01b65Af8D60318943b43D5E03F',
   );
-  await p.setPause(false);
+  // await p.setPause(false);
+  console.log(await p.riffian_airdrop_signer());
+  // return;
+  // p.updateRiffianSigner('0x6fD4c2C3068f678F8D0313Db03ed099e48c04687');
   return;
 
   const boardAddress = '0x6c5BDD99537F344838796DeDFf6cD98b4908c57c';
