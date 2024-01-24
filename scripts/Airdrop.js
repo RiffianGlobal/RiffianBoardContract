@@ -1,4 +1,5 @@
 const { ethers, upgrades } = require('hardhat');
+const { utils } = require('ethers');
 
 async function main() {
   const accounts = await ethers.getSigners();
@@ -10,10 +11,28 @@ async function main() {
     '0x8AD7E2eC2AF30F01b65Af8D60318943b43D5E03F',
   );
   // await p.setPause(false);
-  console.log(await p.riffian_airdrop_signer());
+  // console.log(await p.riffian_airdrop_signer());
   // return;
   // p.updateRiffianSigner('0x6fD4c2C3068f678F8D0313Db03ed099e48c04687');
-  return;
+  {
+    // update reward parameters
+    console.log('reward params');
+    console.log('rewardSocialVerify:', await p.RewardSocialVerify());
+    console.log('rewardFollow:', await p.RewardFollow());
+    console.log('MaxFollow:', await p.MaxFollow());
+    console.log('RewardShare:', await p.RewardShare());
+    console.log('MaxShare:', await p.MaxShare());
+    console.log('RewardVote:', await p.RewardVote());
+    return;
+    await p.updateParameters(
+      ethers.parseEther('100'),
+      ethers.parseEther('10'),
+      5,
+      ethers.parseEther('10'),
+      10,
+      ethers.parseEther('40'),
+    );
+  }
 
   const boardAddress = '0x6c5BDD99537F344838796DeDFf6cD98b4908c57c';
   const Airdrop = await ethers.getContractFactory('RiffianAirdrop');

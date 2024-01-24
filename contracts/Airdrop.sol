@@ -190,6 +190,15 @@ contract RiffianAirdrop is EIP712Upgradeable, OwnableUpgradeable, IRiffianAirdro
         paused = _paused;
     }
 
+    function updateParameters(uint _rewardSocialVerify, uint _rewardFollow, uint _maxFollow, uint _rewardShare, uint _maxShare, uint _rewardVote) external onlyOwner {
+        RewardSocialVerify = _rewardSocialVerify;
+        RewardFollow = _rewardFollow;
+        MaxFollow = _maxFollow;
+        RewardShare = _rewardShare;
+        MaxShare = _maxShare;
+        RewardVote = _rewardVote;
+    }
+
     /**
      * PRIVILEGED MODULE FUNCTION. Function that update riffian signer address.
      */
