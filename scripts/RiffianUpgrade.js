@@ -2,6 +2,7 @@ const { ethers, upgrades } = require('hardhat');
 
 const PROXY_ADDRESS = {
   rifftestnet: '0x6c5BDD99537F344838796DeDFf6cD98b4908c57c',
+  riff: '0xc6712F4B2EeDe48D5BA8f09Db56C820F4A236828',
   ftmtestnet: '0x5D0D729990C9b97Ab1de2A65CF98901b1229f3cf',
 }[hre.network.name];
 

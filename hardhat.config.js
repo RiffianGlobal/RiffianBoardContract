@@ -43,6 +43,10 @@ module.exports = {
       url: process.env.NETWORK_RIFFTESTNET,
       accounts: accounts(),
     },
+    riff: {
+      url: process.env.NETWORK_RIFF,
+      accounts: accounts(),
+    },
     ftmtestnet: {
       gasPrice: 3000000000,
       url: process.env.NETWORK_INFURA_URL_FANTOMTESTNET,
@@ -66,6 +70,14 @@ module.exports = {
         urls: {
           apiURL: 'https://scan.testnet.doid.tech/api',
           browserURL: 'https://scan.testnet.doid.tech',
+        },
+      },
+      {
+        network: 'riff',
+        chainId: 0xdddd,
+        urls: {
+          apiURL: 'https://scan.doid.tech/api',
+          browserURL: 'https://scan.doid.tech',
         },
       },
     ],
